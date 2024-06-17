@@ -11,8 +11,6 @@ connectionDB(process.env.DB_CONNECTION_STRING);
 
 //Middlewares
 
-app.use(notFound);
-app.use(errorHandler);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -20,11 +18,13 @@ app.use(express.urlencoded({ extended: false }));
 //Routes
 
 app.get("/", (req, res) => {
-  console.log("gertttttttttttt");
   res.send("Hello From Server");
 });
 
 app.use("/api/user", authRouter);
+
+app.use(notFound);
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Your Server is running at PORT ${PORT}`);

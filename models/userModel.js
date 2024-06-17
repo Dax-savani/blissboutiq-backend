@@ -49,7 +49,6 @@ userSchema.pre("save", async function (next) {
     const salt = await bcrypt.genSaltSync(10);
     this.password = await bcrypt.hash(this.password, salt);
   }
-  next();
 });
 
 //Export the model

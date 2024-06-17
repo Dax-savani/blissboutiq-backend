@@ -6,17 +6,29 @@ const notFound = (req, res, next) => {
   next(error);
 };
 
-// Error Handler
-
+// Error handler middleware
 const errorHandler = (err, req, res, next) => {
-    const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
-    console.log("err : ",statusCode)
+  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
   res.status(statusCode);
-  res.status(statusCode).json({
-    message: err?.message,
-    stack: err?.stack,
+
+  console.error(err.message, { stack: err.stack });
+
+  res.json({
+      status: 'error',
+      statusCode,
+      message: err?.message,
+      stack: err?.stack
   });
-  next();
 };
+
+// const errorHandler = (err, req, res, next) => {
+//   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+//   res.status(statusCode);
+//   res.status(statusCode).json({
+//     message: err?.message,
+//     stack: err?.stack,
+//   });
+//   next();
+// };
 
 module.exports = { notFound, errorHandler };
