@@ -1,14 +1,31 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
+const addressSchema = new mongoose.Schema({
+  address_1: {
+    type: String,
+  },
+  address_2: {
+    type: String,
+  },
+  country: {
+    type: String,
+  },
+  state: {
+    type: String,
+  },
+  city: {
+    type: String,
+  },
+  zipcode: {
+    type: String,
+    match: [/^\d{5}(-\d{4})?$/, "Please use a valid zipcode"],
+  },
+})
+
 // Declare the Schema of the Mongo model
 
-var userSchema = new mongoose.Schema({
-  salutation: {
-    type: String,
-    enum: ["Mr", "Mrs", "Ms"],
-    required: true,
-  },
+const userSchema = new mongoose.Schema({
   user_name: {
     type: String,
     required: true,
@@ -42,14 +59,20 @@ var userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  address_details: {
+    type: addressSchema,
+  }
 });
 
 userSchema.pre("save", async function (next) {
   if (this.isModified("password") || this.isNew) {
-    const salt = await bcrypt.genSaltSync(10);
-    this.password = await bcrypt.hash(this.password, salt);
+    this.password = await bcrypt.hash(this.password, 10);
   }
 });
+
+userSchema.methods.isPasswordMatched = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword,this.password)
+}
 
 //Export the model
 module.exports = mongoose.model("User", userSchema);
