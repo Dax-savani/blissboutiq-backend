@@ -1,3 +1,5 @@
+import {auth} from "./middlewares/auth";
+
 const express = require("express");
 const connectionDB = require("./config/connection");
 const authRouter = require("./routes/auth");
@@ -23,7 +25,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/user", authRouter);
-app.use("/api/product", productRouter);
+app.use("/api/product", auth,productRouter);
 
 
 
