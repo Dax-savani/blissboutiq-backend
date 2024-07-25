@@ -9,25 +9,20 @@ cloudinary.config({
 
 const uploadFiles = async (fileBuffers) => {
     try {
-        const urls = [];
-        for (const fileBuffer of fileBuffers) {
-            const result = await new Promise((resolve, reject) => {
-                const uploadOptions = {
-                    folder: "Product-images",
-                };
+        const urls = await Promise.all(fileBuffers.map(fileBuffer =>
+            new Promise((resolve, reject) => {
+                const uploadOptions = { folder: "Product-images" };
                 const stream = cloudinary.uploader.upload_stream(uploadOptions, (error, result) => {
                     if (error) {
                         console.error("Cloudinary upload error:", error.message);
                         reject(error);
                     } else {
-                        console.log("Cloudinary upload result:", result);
                         resolve(result.secure_url);
                     }
                 });
                 stream.end(fileBuffer);
-            });
-            urls.push(result);
-        }
+            })
+        ));
         return urls;
     } catch (error) {
         console.error("Error uploading files:", error.message);
