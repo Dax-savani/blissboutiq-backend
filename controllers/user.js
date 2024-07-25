@@ -9,7 +9,8 @@ const handleCreateUser = asyncHandler(async (req, res) => {
         $or: [{email: email}, {user_name: user_name}, {phone_number: phone_number}]
     })
 
-    if (userExist) return throw new Error("User already exist")
+    if (userExist) throw new Error("User already exist")
+
 
     const newUser = await User.create(req.body);
 
@@ -21,11 +22,11 @@ const handleLoginCtrl = asyncHandler(async (req, res) => {
 
     const findUser = await User.findOne({email});
 
-    if (!findUser) return throw new Error("User not found.")
+    if (!findUser)  throw new Error("User not found.")
 
     const isMatch = await findUser.isPasswordMatched(password)
 
-    if (!isMatch) return throw new Error("Invalid credentials")
+    if (!isMatch) throw new Error("Invalid credentials")
 
     const authToken = generateToken(findUser?._id)
 

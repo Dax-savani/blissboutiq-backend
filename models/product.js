@@ -80,7 +80,7 @@ const productSchema = new Schema({
     qty: {
         type: Number,
         required: true,
-        default: 0
+        default: 1
     },
     category: {
         type: String,

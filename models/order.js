@@ -1,14 +1,13 @@
 const mongoose = require('mongoose');
 const {Schema} = mongoose;
 
-const cartSchema = new Schema({
+const orderSchema = new Schema({
     user_id : {
         type: String,
         ref: 'User',
         required: true,
     },
     product_id: {
-        ref:"Product",
         type: String,
         required: true,
     },
@@ -16,7 +15,13 @@ const cartSchema = new Schema({
         type: Number,
         default: 1,
         required: true,
+    },
+    status: {
+        type: String,
+        enum: ['placed', 'confirmed', 'shipped', 'delivered', 'cancelled'],
+        default: 'placed',
+        required: true
     }
 })
 
-module.exports = mongoose.model("Cart", cartSchema);
+module.exports = mongoose.model("Order", orderSchema);
