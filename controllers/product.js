@@ -33,7 +33,8 @@ const handleCreateProduct = asyncHandler(async (req, res) => {
     const files = req.files;
     const fileBuffers = files.map(file => file.buffer);
 
-    const imageUrls = await uploadFiles(fileBuffers);
+    const imageUrls = await Promise.all(uploadFiles(fileBuffers));
+
     const createdProduct = await Product.create({
         title,
         description,
