@@ -18,38 +18,43 @@ const handleGetSingleProduct = asyncHandler(async (req, res) => {
 })
 
 const handleCreateProduct = asyncHandler(async (req, res) => {
-    const {
-        title,
-        description,
-        size_options,
-        color_options,
-        instruction,
-        qty,
-        category,
-        sub_category,
-        gender
-    } = req.body;
+    try {
+        const {
+            title,
+            description,
+            size_options,
+            color_options,
+            instruction,
+            qty,
+            category,
+            sub_category,
+            gender,
+        } = req.body;
 
-    const files = req.files;
-    const fileBuffers = files.map(file => file.buffer);
+        const files = req.files;
+        const fileBuffers = files.map(file => file.buffer);
 
-    const imageUrls = await Promise.all(uploadFiles(fileBuffers));
+        const imageUrls = await uploadFiles(fileBuffers);
 
-    const createdProduct = await Product.create({
-        title,
-        description,
-        size_options: JSON.parse(size_options),
-        color_options: JSON.parse(color_options),
-        instruction,
-        qty,
-        category,
-        sub_category,
-        gender,
-        product_images: imageUrls,
-    });
+        const createdProduct = await Product.create({
+            title,
+            description,
+            size_options: JSON.parse(size_options),
+            color_options: JSON.parse(color_options),
+            instruction,
+            qty,
+            category,
+            sub_category,
+            gender,
+            product_images: imageUrls,
+        });
 
-    return res.status(201).json(createdProduct);
-})
+        return res.status(201).json(createdProduct);
+    } catch (error) {
+        console.error("Error creating product:", error.message);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+});
 
 const handleEditProduct = asyncHandler(async (req, res) => {
     const {productId} = req.params;
