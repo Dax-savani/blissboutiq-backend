@@ -47,7 +47,7 @@ const userSchema = new mongoose.Schema({
   gender: {
     type: String,
     required: true,
-    enum: ['Male', 'Female', 'Unisex'],
+    enum: ['Male', 'Female'],
     validate: {
       validator: function(v) {
         return ['Male', 'Female', 'Unisex'].includes(v);
