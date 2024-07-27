@@ -26,11 +26,6 @@ const addressSchema = new mongoose.Schema({
 // Declare the Schema of the Mongo model
 
 const userSchema = new mongoose.Schema({
-  user_name: {
-    type: String,
-    required: true,
-    unique: true,
-  },
   first_name: {
     type: String,
     required: true,

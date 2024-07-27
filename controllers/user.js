@@ -3,10 +3,10 @@ const {generateToken} = require("../auth/jwt");
 const asyncHandler = require("express-async-handler");
 
 const handleCreateUser = asyncHandler(async (req, res) => {
-    const {email, phone_number, user_name} = req.body;
+    const {email, phone_number} = req.body;
 
     const userExist = await User.exists({
-        $or: [{email: email}, {user_name: user_name}, {phone_number: phone_number}]
+        $or: [{email: email},  {phone_number: phone_number}]
     })
 
     if (userExist) throw new Error("User already exist")
