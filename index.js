@@ -7,6 +7,7 @@ const app = express();
 const dotenv = require("dotenv").config();
 const PORT = process.env.PORT || 4000;
 const cookieParser = require('cookie-parser')
+const cors = require('cors')
 //routes
 const authRouter = require("./routes/auth");
 const productRouter = require("./routes/product");
@@ -17,8 +18,7 @@ const orderRouter = require("./routes/order");
 connectionDB(process.env.DB_CONNECTION_STRING);
 
 //Middlewares
-
-
+app.use(cors())
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({extended: false}));
