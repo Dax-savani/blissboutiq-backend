@@ -49,6 +49,17 @@ const userSchema = new mongoose.Schema({
     unique: true,
     match: [/^\d{10}$/, "Phone number must be 10 digits"],
   },
+  gender: {
+    type: String,
+    required: true,
+    enum: ['Male', 'Female', 'Unisex'],
+    validate: {
+      validator: function(v) {
+        return ['Male', 'Female', 'Unisex'].includes(v);
+      },
+      message: '{VALUE} is not a valid gender'
+    }
+  },
   email: {
     type: String,
     required: true,
