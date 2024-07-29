@@ -27,23 +27,22 @@ const sizeSchema = new Schema({
         required: true,
         default: 0,
     },
-    price: {
-        type: Number,
-        required: true
-    }
 }, {
     _id: false
 })
 
-// const imageSchema = new Schema({
-//     url: {
-//         type: String,
-//         // required: true,
-//     }
-// }, {
-//     _id: false
-// })
-
+const productPriceSchema = new Schema({
+    orignal_price: {
+        type: String,
+        required: true,
+    },
+    discounted_price: {
+        type: String,
+        required: true,
+    },
+}, {
+    _id: false
+});
 const productSchema = new Schema({
     title: {
         type: String,
@@ -62,6 +61,10 @@ const productSchema = new Schema({
             },
             message: "At least one Color option is required."
         }
+    },
+    price: {
+        type: productPriceSchema,
+        required: true
     },
     size_options: {
         type: [sizeSchema],

@@ -21,7 +21,7 @@ const addressSchema = new mongoose.Schema({
     type: String,
     match: [/^\d{5}(-\d{4})?$/, "Please use a valid zipcode"],
   },
-})
+});
 
 // Declare the Schema of the Mongo model
 

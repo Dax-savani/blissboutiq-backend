@@ -18,6 +18,7 @@ const handleGetSingleProduct = asyncHandler(async (req, res) => {
 })
 
 const handleCreateProduct = asyncHandler(async (req, res) => {
+    console.log(req.body)
     try {
         const {
             title,
@@ -26,9 +27,12 @@ const handleCreateProduct = asyncHandler(async (req, res) => {
             color_options,
             instruction,
             stock,
+            price,
             category,
             sub_category,
             gender,
+            other_info,
+
         } = req.body;
 
         const files = req.files;
@@ -42,18 +46,20 @@ const handleCreateProduct = asyncHandler(async (req, res) => {
             description,
             size_options: JSON.parse(size_options),
             color_options: JSON.parse(color_options),
-            instruction,
+            instruction: JSON.parse(instruction),
             stock,
+            price: JSON.parse(price),
             category,
             sub_category,
             gender,
+            other_info,
             product_images: imageUrls,
         });
 
         return res.status(201).json(createdProduct);
     } catch (error) {
         console.error("Error creating product:", error.message);
-        return res.status(500).json({ message: "Internal Server Error" });
+        return res.status(500).json({ status:500,message: "Internal Server Error" });
     }
 });
 
@@ -67,6 +73,7 @@ const handleEditProduct = asyncHandler(async (req, res) => {
         instruction,
         stock,
         category,
+        price,
         sub_category,
         gender,
     } = req.body;
