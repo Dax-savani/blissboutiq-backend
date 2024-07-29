@@ -33,7 +33,7 @@ const handleLoginCtrl = asyncHandler(async (req, res) => {
     res.cookie("auth", authToken, {
         httpOnly: true,
         secure: true,
-        domain: 'localhost:3000',
+        domain: 'http://localhost:3000',
     });
 
     const user = {
