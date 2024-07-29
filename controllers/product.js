@@ -25,7 +25,7 @@ const handleCreateProduct = asyncHandler(async (req, res) => {
             size_options,
             color_options,
             instruction,
-            qty,
+            stock,
             category,
             sub_category,
             gender,
@@ -43,7 +43,7 @@ const handleCreateProduct = asyncHandler(async (req, res) => {
             size_options: JSON.parse(size_options),
             color_options: JSON.parse(color_options),
             instruction,
-            qty,
+            stock,
             category,
             sub_category,
             gender,
@@ -65,10 +65,10 @@ const handleEditProduct = asyncHandler(async (req, res) => {
         size_options,
         color_options,
         instruction,
-        qty,
+        stock,
         category,
         sub_category,
-        gender
+        gender,
     } = req.body;
 
     const files = req.files;
@@ -85,12 +85,11 @@ const handleEditProduct = asyncHandler(async (req, res) => {
             size_options: size_options ? JSON.parse(size_options) : undefined,
             color_options: color_options ? JSON.parse(color_options) : undefined,
             instruction,
-            qty,
+            stock,
             category,
             sub_category,
             gender,
             product_images: imageUrls
-            // ...(imageUrls.length > 0 && {product_images: imageUrls})
         }, {runValidators: true, new: true});
 
         if (updatedProduct) {

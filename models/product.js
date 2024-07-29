@@ -74,10 +74,10 @@ const productSchema = new Schema({
         }
     },
     instruction: {
-        type: String,
+        type: [String],
         required: false
     },
-    qty: {
+    stock: {
         type: Number,
         required: true,
         default: 1
