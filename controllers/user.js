@@ -30,12 +30,6 @@ const handleLoginCtrl = asyncHandler(async (req, res) => {
 
     const authToken = generateToken(findUser?._id)
 
-    res.cookie("auth", authToken, {
-        httpOnly: true,
-        secure: true,
-        domain: 'http://localhost:3000',
-    });
-
     const user = {
         first_name: findUser?.first_name,
         last_name: findUser?.last_name,
@@ -48,7 +42,8 @@ const handleLoginCtrl = asyncHandler(async (req, res) => {
     return res.json({
         data: user,
         message: "Logged in successfully",
-        status: 200
+        status: 200,
+        token: authToken
     })
 
 })
