@@ -19,7 +19,7 @@ const addressSchema = new mongoose.Schema({
   },
   zipcode: {
     type: String,
-    match: [/^\d{5}(-\d{4})?$/, "Please use a valid zipcode"],
+    match: [/^\d{6}$/, "Please use a valid 6-digit zipcode"]
   },
 });
 
