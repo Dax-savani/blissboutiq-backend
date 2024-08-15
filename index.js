@@ -11,6 +11,7 @@ const cors = require('cors');
 //routes
 const authRouter = require("./routes/auth");
 const productRouter = require("./routes/product");
+const unAuthorisedRouter = require("./routes/UnAuthorisedRoutes");
 const cartRouter = require("./routes/cart");
 const orderRouter = require("./routes/order");
 
@@ -33,6 +34,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/user", authRouter);
+app.use("/api",  unAuthorisedRouter);
 app.use("/api/product", auth, productRouter);
 app.use("/api/cart", auth, cartRouter);
 app.use("/api/order", auth, orderRouter);
