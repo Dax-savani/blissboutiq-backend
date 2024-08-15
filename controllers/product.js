@@ -40,7 +40,6 @@ const handleCreateProduct = asyncHandler(async (req, res) => {
         const fileBuffers = files.map(file => file.buffer);
 
         const imageUrls = await uploadFiles(fileBuffers);
-
         const createdProduct = await Product.create({
             title,
             description,
