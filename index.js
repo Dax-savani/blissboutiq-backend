@@ -20,7 +20,7 @@ connectionDB(process.env.DB_CONNECTION_STRING);
 
 //Middlewares
 app.use(cors({
-    origin: 'http://localhost:3000', // your frontend's domain
+    origin: 'http://localhost:3000',
     credentials: true
 }));
 app.use(express.json());

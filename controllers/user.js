@@ -29,7 +29,7 @@ const handleLoginCtrl = asyncHandler(async (req, res) => {
     if (!isMatch) throw new Error("Invalid credentials")
 
     const authToken = generateToken(findUser?._id)
-
+    res.cookie("token",authToken);
     const user = {
         first_name: findUser?.first_name,
         last_name: findUser?.last_name,
@@ -43,7 +43,6 @@ const handleLoginCtrl = asyncHandler(async (req, res) => {
         data: user,
         message: "Logged in successfully",
         status: 200,
-        token: authToken
     })
 
 })

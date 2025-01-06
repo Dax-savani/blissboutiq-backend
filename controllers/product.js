@@ -1,10 +1,19 @@
 const Product = require('../models/product');
+const Cart = require('../models/cart');
 const asyncHandler = require("express-async-handler");
 const {uploadFiles} = require('../helpers/productImage');
 
 const handleGetProduct = asyncHandler(async (req, res) => {
     const products = await Product.find({});
-    return res.json(products);
+    const cartProducts = await Cart.find({});
+    const cartProductsIds = new Set(cartProducts.map((item) => item.product_id.toString()));
+    const productsWithCartStatus = products.map((item) => {
+        const productObj = item.toObject();
+        return {
+        ...productObj,
+        isCart: cartProductsIds.has(item._id.toString())
+    }})
+    return res.json(productsWithCartStatus);
 });
 
 const handleGetSingleProduct = asyncHandler(async (req, res) => {
@@ -58,7 +67,7 @@ const handleCreateProduct = asyncHandler(async (req, res) => {
         return res.status(201).json(createdProduct);
     } catch (error) {
         console.error("Error creating product:", error.message);
-        return res.status(500).json({ status:500,message: "Internal Server Error" });
+        return res.status(500).json({status: 500, message: "Internal Server Error"});
     }
 });
 

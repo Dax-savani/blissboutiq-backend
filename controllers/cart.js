@@ -1,8 +1,9 @@
 const Cart = require('../models/cart');
+const Product= require('../models/product');
 const asyncHandler = require("express-async-handler");
 
 const handleGetCart = asyncHandler(async (req,res) => {
-    const cartProducts = await Cart.find().populate('product_id');
+    const cartProducts = await Cart.find({}).populate('user_id');;
     return res.json(cartProducts);
 })
 
@@ -11,7 +12,7 @@ const handleGetSingleCart = asyncHandler(async (req,res) => {
     const cartProduct = await Cart.findById(cartId).populate('product_id');
     if(!cartProduct) {
         res.status(404)
-        throw new Error('Cart item not found');
+        throw new Error('Cart item not found')
     }
     return res.json(cartProduct);
 })
@@ -19,6 +20,8 @@ const handleGetSingleCart = asyncHandler(async (req,res) => {
 
 const handleAddCart = asyncHandler(async (req, res) => {
     const {product_id, qty} = req.body;
+    const findedProduct = await Product.findById(product_id);
+    if(!findedProduct) return res.status(404).json({status: 404,message: "Product not found"});
     try {
         const newCart = await Cart.create({
             user_id: req.user._id,
@@ -38,12 +41,11 @@ const handleAddCart = asyncHandler(async (req, res) => {
 const handleEditCart = asyncHandler(async (req, res) => {
     const {cartId} = req.params;
     const {qty} = req.body;
-
-    if (!qty) return res.status(400).json({status: 400, message: "Quantity is required"});
-
     if(qty == 0) {
-        await Cart.findByIdAndDelete(cartId);
+        const removeProduct = await Cart.findByIdAndDelete(cartId);
+        return res.status(200).json({status:200,message: "Product removed",data:removeProduct});
     }
+    if (!qty) return res.status(400).json({status: 400, message: "Quantity is required"});
 
     try {
         const updatedCart = await Cart.findByIdAndUpdate(cartId, {qty}, {new: true, runValidators: true});
@@ -56,7 +58,7 @@ const handleEditCart = asyncHandler(async (req, res) => {
         console.error("Error updating cart product",err);
         return res.status(500).json({status: 500,message: "Error updating cart product",error: err})
     }
-})
+});
 
 const handleDeleteCart = asyncHandler(async (req,res) => {
     try{
@@ -67,8 +69,8 @@ const handleDeleteCart = asyncHandler(async (req,res) => {
         const deletedProduct = await Cart.findByIdAndDelete(cartId);
         return res.status(200).json({status: 200,message: "Product deleted successfully",data: deletedProduct});
     } catch(err){
-        throw Error("Failed to delete Product");
         res.status(500).json({status:500,message: "Failed to delete Product",error: err.message});
+        throw Error("Failed to delete Product");
     }
 })
 

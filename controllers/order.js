@@ -41,7 +41,6 @@ const handleEditOrder = asyncHandler(async (req, res) => {
     try {
         const {orderId} = req.params;
         const {status} = req.body;
-        console.log(status,orderId);
         const validStatuses = ['placed', 'processed', 'shipped', 'delivered', 'cancelled'];
         if (!validStatuses.includes(status)) {
             res.status(400);
