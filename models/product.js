@@ -102,6 +102,9 @@ const productSchema = new Schema({
         enum: ['male', 'female', 'unisex']
     },
     product_images: {
+
+
+
         type: [String],
         required: true,
         validate: {

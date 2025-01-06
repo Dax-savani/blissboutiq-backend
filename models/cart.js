@@ -8,8 +8,8 @@ const cartSchema = new Schema({
         required: true,
     },
     product_id: {
-        ref:"Product",
         type: String,
+        ref:"Product",
         required: true,
     },
     qty: {
