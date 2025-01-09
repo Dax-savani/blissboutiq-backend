@@ -72,7 +72,7 @@ const handleCreateProduct = asyncHandler(async (req, res) => {
 });
 
 const handleEditProduct = asyncHandler(async (req, res) => {
-    const {productId} = req.params;
+    const { productId } = req.params;
     const {
         title,
         description,
@@ -84,40 +84,65 @@ const handleEditProduct = asyncHandler(async (req, res) => {
         price,
         sub_category,
         gender,
+        product_images,
     } = req.body;
 
     const files = req.files;
-    let imageUrls = []
+    let imageUrls = [];
+
+
+    if (product_images) {
+        const parsedImages = Array.isArray(product_images)
+            ? product_images
+            : JSON.parse(product_images);
+        imageUrls = [...parsedImages];
+    }
+
 
     if (files && files.length > 0) {
         const fileBuffers = files.map(file => file.buffer);
-        imageUrls = await uploadFiles(fileBuffers);
+        const uploadedUrls = await uploadFiles(fileBuffers);
+        imageUrls = [...imageUrls, ...uploadedUrls];
     }
+
     try {
-        const updatedProduct = await Product.findByIdAndUpdate(productId, {
-            title,
-            description,
-            size_options: size_options ? JSON.parse(size_options) : undefined,
-            color_options: color_options ? JSON.parse(color_options) : undefined,
-            instruction,
-            stock,
-            category,
-            sub_category,
-            gender,
-            product_images: imageUrls
-        }, {runValidators: true, new: true});
+        const updatedProduct = await Product.findByIdAndUpdate(
+            productId,
+            {
+                title,
+                description,
+                size_options: size_options ? JSON.parse(size_options) : undefined,
+                color_options: color_options ? JSON.parse(color_options) : undefined,
+                instruction,
+                stock,
+                category,
+                price,
+                sub_category,
+                gender,
+                product_images: imageUrls,
+            },
+            { runValidators: true, new: true }
+        );
 
         if (updatedProduct) {
-            return res.status(200).json({status: 200, message: "Product updated successfully", data: updatedProduct});
+            return res.status(200).json({
+                status: 200,
+                message: "Product updated successfully",
+                data: updatedProduct,
+            });
         } else {
-            res.status(404).json({status: 404, message: "Product not found"});
+            res.status(404).json({ status: 404, message: "Product not found" });
             throw new Error("Product not found");
         }
     } catch (err) {
         console.error("Error updating Product", err.message);
-        return res.status(500).json({message: "Failed to update Product", error: err.message})
+        return res.status(500).json({
+            message: "Failed to update Product",
+            error: err.message,
+        });
     }
-})
+});
+
 
 const handleDeleteProduct = asyncHandler(async (req, res) => {
     const deletedProduct = await Product.findByIdAndDelete(req.params.productId);
