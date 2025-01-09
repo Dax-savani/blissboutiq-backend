@@ -27,7 +27,6 @@ const handleGetSingleProduct = asyncHandler(async (req, res) => {
 })
 
 const handleCreateProduct = asyncHandler(async (req, res) => {
-    console.log(req.body)
     try {
         const {
             title,
@@ -41,7 +40,6 @@ const handleCreateProduct = asyncHandler(async (req, res) => {
             sub_category,
             gender,
             other_info,
-
         } = req.body;
 
         const files = req.files;
@@ -84,20 +82,10 @@ const handleEditProduct = asyncHandler(async (req, res) => {
         price,
         sub_category,
         gender,
-        product_images,
     } = req.body;
 
     const files = req.files;
     let imageUrls = [];
-
-
-    if (product_images) {
-        const parsedImages = Array.isArray(product_images)
-            ? product_images
-            : JSON.parse(product_images);
-        imageUrls = [...parsedImages];
-    }
-
 
     if (files && files.length > 0) {
         const fileBuffers = files.map(file => file.buffer);
