@@ -3,11 +3,15 @@ const User = require('../models/user')
 
 async function auth(req, res, next) {
 
-    const authToken = req.headers?.token;
+    let authToken = req.headers?.token;
 
     if (!authToken) return res.status(401).json({message: "UnAuthorised: Auth token not found!", status: 401});
 
-    const user = await verifyToken(authToken.split(' ')[1]);
+    if (authToken.includes('Bearer')) {
+        authToken = authToken.split(' ')[1];
+    }
+
+    const user = await verifyToken(authToken);
 
     const verifiedUser = await User.findById(user.id);
 
