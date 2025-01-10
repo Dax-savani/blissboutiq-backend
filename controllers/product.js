@@ -121,7 +121,7 @@ const handleEditProduct = asyncHandler(async (req, res) => {
                 instruction,
                 stock,
                 category,
-                price,
+                price: JSON.parse(price),
                 sub_category,
                 gender,
                 product_images: existingImages,
