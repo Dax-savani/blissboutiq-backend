@@ -10,9 +10,10 @@ const handleGetProduct = asyncHandler(async (req, res) => {
     const productsWithCartStatus = products.map((item) => {
         const productObj = item.toObject();
         return {
-        ...productObj,
-        isCart: cartProductsIds.has(item._id.toString())
-    }})
+            ...productObj,
+            isCart: cartProductsIds.has(item._id.toString())
+        }
+    })
     return res.json(productsWithCartStatus);
 });
 
@@ -70,7 +71,7 @@ const handleCreateProduct = asyncHandler(async (req, res) => {
 });
 
 const handleEditProduct = asyncHandler(async (req, res) => {
-    const { productId } = req.params;
+    const {productId} = req.params;
     const {
         title,
         description,
@@ -85,12 +86,28 @@ const handleEditProduct = asyncHandler(async (req, res) => {
     } = req.body;
 
     const files = req.files;
-    let imageUrls = [];
 
+    const existingProduct = await Product.findById(productId);
+    if (!existingProduct) {
+        return res.status(404).json({status: 404, message: "Product not found"});
+    }
+    let existingImages = existingProduct.product_images || [];
+    let uploadedImages = [];
     if (files && files.length > 0) {
-        const fileBuffers = files.map(file => file.buffer);
-        const uploadedUrls = await uploadFiles(fileBuffers);
-        imageUrls = [...imageUrls, ...uploadedUrls];
+        for (const file of req.files) {
+            if (file.path && file.path.startsWith("http")) {
+                uploadedImages.push(file.path);
+            } else if (file.buffer) {
+                const url = await uploadFiles(file.buffer);
+                if (url) {
+                    uploadedImages.push(url);
+                }
+            } else {
+                console.warn("File structure not as expected:", file);
+            }
+        }
+
+        existingImages = [...existingImages, ...uploadedImages];
     }
 
     try {
@@ -107,9 +124,9 @@ const handleEditProduct = asyncHandler(async (req, res) => {
                 price,
                 sub_category,
                 gender,
-                product_images: imageUrls,
+                product_images: existingImages,
             },
-            { runValidators: true, new: true }
+            {runValidators: true, new: true}
         );
 
         if (updatedProduct) {
@@ -119,7 +136,7 @@ const handleEditProduct = asyncHandler(async (req, res) => {
                 data: updatedProduct,
             });
         } else {
-            res.status(404).json({ status: 404, message: "Product not found" });
+            res.status(404).json({status: 404, message: "Product not found"});
             throw new Error("Product not found");
         }
     } catch (err) {
