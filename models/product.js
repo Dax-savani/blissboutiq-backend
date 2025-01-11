@@ -86,8 +86,9 @@ const productSchema = new Schema({
         default: 1
     },
     category: {
-        type: String,
-        required: true
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category",
+        required: true,
     },
     sub_category: {
         type: String,
@@ -102,9 +103,6 @@ const productSchema = new Schema({
         enum: ['male', 'female', 'unisex']
     },
     product_images: {
-
-
-
         type: [String],
         required: true,
         validate: {

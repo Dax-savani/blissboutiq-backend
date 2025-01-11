@@ -14,6 +14,7 @@ const productRouter = require("./routes/product");
 const unAuthorisedRouter = require("./routes/UnAuthorisedRoutes");
 const cartRouter = require("./routes/cart");
 const orderRouter = require("./routes/order");
+const categoryRouter = require("./routes/category");
 
 //connection to database
 connectionDB(process.env.DB_CONNECTION_STRING);
@@ -35,6 +36,7 @@ app.use("/api",  unAuthorisedRouter);
 app.use("/api/product", auth, productRouter);
 app.use("/api/cart", auth, cartRouter);
 app.use("/api/order", auth, orderRouter);
+app.use("/api/category", auth, categoryRouter);
 
 
 app.use(notFound);
