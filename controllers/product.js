@@ -4,28 +4,39 @@ const asyncHandler = require("express-async-handler");
 const {uploadFiles} = require('../helpers/productImage');
 
 const handleGetProduct = asyncHandler(async (req, res) => {
-    const products = await Product.find({});
-    const cartProducts = await Cart.find({});
-    const cartProductsIds = new Set(cartProducts.map((item) => item.product_id.toString()));
-    const productsWithCartStatus = products.map((item) => {
-        const productObj = item.toObject();
-        return {
-            ...productObj,
-            isCart: cartProductsIds.has(item._id.toString())
-        }
-    })
-    return res.json(productsWithCartStatus);
+    try {
+        const products = await Product.find({}).populate('category', 'name image');
+        const cartProducts = await Cart.find({});
+        const cartProductsIds = new Set(cartProducts.map((item) => item.product_id.toString()));
+        const productsWithCartStatus = products.map((item) => {
+            const productObj = item.toObject();
+            return {
+                ...productObj,
+                isCart: cartProductsIds.has(item._id.toString())
+            };
+        });
+
+        return res.json(productsWithCartStatus);
+    } catch (error) {
+        console.error("Error fetching products:", error.message);
+        res.status(500).json({ message: "Failed to fetch products" });
+    }
 });
 
 const handleGetSingleProduct = asyncHandler(async (req, res) => {
-    const product = await Product.findById(req.params.productId);
-    if (product) {
-        return res.json(product)
-    } else {
-        res.status(404);
-        throw new Error('Product not found');
+    try {
+        const product = await Product.findById(req.params.productId).populate('category', 'name image');
+        if (product) {
+            return res.json(product);
+        } else {
+            res.status(404).json({ message: "Product not found" });
+        }
+    } catch (error) {
+        console.error("Error fetching product:", error.message);
+        res.status(500).json({ message: "Failed to fetch product" });
     }
-})
+});
+
 
 const handleCreateProduct = asyncHandler(async (req, res) => {
     try {
