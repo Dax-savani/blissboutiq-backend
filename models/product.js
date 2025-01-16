@@ -1,20 +1,17 @@
 const mongoose = require("mongoose");
-const {Schema} = mongoose;
+const { Schema } = mongoose;
 
-
+// Define color, size, and price schemas (unchanged)
 const colorSchema = new Schema({
-        color: {
-            type: String,
-            required: true,
-        },
-        hex: {
-            type: String,
-            required: true
-        }
-    }, {
-        _id: false
-    }
-)
+    color: {
+        type: String,
+        required: true,
+    },
+    hex: {
+        type: String,
+        required: true,
+    },
+}, { _id: false });
 
 const sizeSchema = new Schema({
     size: {
@@ -27,9 +24,7 @@ const sizeSchema = new Schema({
         required: true,
         default: 0,
     },
-}, {
-    _id: false
-})
+}, { _id: false });
 
 const productPriceSchema = new Schema({
     orignal_price: {
@@ -40,17 +35,17 @@ const productPriceSchema = new Schema({
         type: String,
         required: true,
     },
-}, {
-    _id: false
-});
+}, { _id: false });
+
+// Define product schema
 const productSchema = new Schema({
     title: {
         type: String,
-        required: true
+        required: true,
     },
     description: {
         type: String,
-        required: true
+        required: true,
     },
     color_options: {
         type: [colorSchema],
@@ -59,12 +54,12 @@ const productSchema = new Schema({
             validator: function (value) {
                 return value.length > 0;
             },
-            message: "At least one Color option is required."
-        }
+            message: "At least one Color option is required.",
+        },
     },
     price: {
         type: productPriceSchema,
-        required: true
+        required: true,
     },
     size_options: {
         type: [sizeSchema],
@@ -73,34 +68,35 @@ const productSchema = new Schema({
             validator: function (value) {
                 return value.length > 0;
             },
-            message: 'At least one size option is required.'
-        }
+            message: "At least one size option is required.",
+        },
     },
     instruction: {
         type: [String],
-        required: false
+        required: false,
     },
     stock: {
         type: Number,
         required: true,
-        default: 1
+        default: 1,
     },
     category: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Category",
-        required: true,
+        required: false, // Category is derived from Subcategory
     },
-    sub_category: {
-        type: String,
-        required: true
+    subcategory: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Subcategory", // Reference to Subcategory
+        required: true,
     },
     other_info: {
         type: Object,
-        required: false
+        required: false,
     },
     gender: {
         type: String,
-        enum: ['male', 'female', 'unisex']
+        enum: ['male', 'female', 'unisex'],
     },
     product_images: {
         type: [String],
@@ -109,10 +105,21 @@ const productSchema = new Schema({
             validator: function (value) {
                 return value.length > 0;
             },
-            message: "At least one product image is required."
-        }
-    }
-}, {timestamps: true});
+            message: "At least one product image is required.",
+        },
+    },
+}, { timestamps: true });
 
+productSchema.pre('save', async function (next) {
+    if (this.subcategory) {
+        const Subcategory = mongoose.model("Subcategory");
+        const subcategory = await Subcategory.findById(this.subcategory).populate('category');
+        if (!subcategory) {
+            return next(new Error("Invalid subcategory ID"));
+        }
+        this.category = subcategory.category;
+    }
+    next();
+});
 
 module.exports = mongoose.model("Product", productSchema);
