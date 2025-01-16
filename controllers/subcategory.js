@@ -35,7 +35,7 @@ const handleAddSubcategory = asyncHandler(async (req, res) => {
         const { categoryId } = req.params;
         const { name } = req.body;
 
-        if (!name || name.trim() === "") {
+        if (!name) {
             return res.status(400).json({ message: "Subcategory name is required" });
         }
 
