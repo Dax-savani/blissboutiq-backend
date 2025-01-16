@@ -5,7 +5,9 @@ const {uploadFiles} = require('../helpers/productImage');
 
 const handleGetProduct = asyncHandler(async (req, res) => {
     try {
-        const products = await Product.find({}).populate('category', 'name image');
+        const { categoryId } = req.query;
+        const filter = categoryId ? { category: categoryId } : {};
+        const products = await Product.find(filter).populate('category', 'name image');
         const cartProducts = await Cart.find({});
         const cartProductsIds = new Set(cartProducts.map((item) => item.product_id.toString()));
         const productsWithCartStatus = products.map((item) => {
@@ -15,13 +17,13 @@ const handleGetProduct = asyncHandler(async (req, res) => {
                 isCart: cartProductsIds.has(item._id.toString())
             };
         });
-
         return res.json(productsWithCartStatus);
     } catch (error) {
         console.error("Error fetching products:", error.message);
         res.status(500).json({ message: "Failed to fetch products" });
     }
 });
+
 
 const handleGetSingleProduct = asyncHandler(async (req, res) => {
     try {
