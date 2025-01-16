@@ -3,13 +3,13 @@ const Product = require('../models/product');
 const asyncHandler = require("express-async-handler");
 
 const handleGetCart = asyncHandler(async (req, res) => {
-    const cartProducts = await Cart.find({}).populate('user_id product_id');
+    const cartProducts = await Cart.find({ user_id: req.user._id }).populate('user_id product_id');
     return res.json(cartProducts);
 });
 
 const handleGetSingleCart = asyncHandler(async (req, res) => {
     const { cartId } = req.params;
-    const cartProduct = await Cart.findById(cartId).populate('user_id product_id');
+    const cartProduct = await Cart.findOne({ _id: cartId, user_id: req.user._id }).populate('user_id product_id');
     if (!cartProduct) {
         res.status(404);
         throw new Error('Cart item not found');
@@ -25,7 +25,6 @@ const handleAddCart = asyncHandler(async (req, res) => {
         return res.status(404).json({ status: 404, message: "Product not found" });
     }
 
-    // Validate color and size
     const isColorValid = findedProduct.color_options.some(option => option.color === color);
     const isSizeValid = findedProduct.size_options.some(option => option.size === size);
 
@@ -60,7 +59,10 @@ const handleEditCart = asyncHandler(async (req, res) => {
     const { qty, color, size } = req.body;
 
     if (qty === 0) {
-        const removeProduct = await Cart.findByIdAndDelete(cartId);
+        const removeProduct = await Cart.findOneAndDelete({ _id: cartId, user_id: req.user._id });
+        if (!removeProduct) {
+            return res.status(404).json({ status: 404, message: "Product not found in cart" });
+        }
         return res.status(200).json({ status: 200, message: "Product removed", data: removeProduct });
     }
 
@@ -69,8 +71,8 @@ const handleEditCart = asyncHandler(async (req, res) => {
     }
 
     try {
-        const updatedCart = await Cart.findByIdAndUpdate(
-            cartId,
+        const updatedCart = await Cart.findOneAndUpdate(
+            { _id: cartId, user_id: req.user._id },
             { qty, color, size },
             { new: true, runValidators: true }
         );
@@ -89,12 +91,12 @@ const handleEditCart = asyncHandler(async (req, res) => {
 const handleDeleteCart = asyncHandler(async (req, res) => {
     try {
         const { cartId } = req.params;
-        const cartProduct = await Cart.findById(cartId);
+        const cartProduct = await Cart.findOne({ _id: cartId, user_id: req.user._id });
         if (!cartProduct) {
             return res.status(404).json({ status: 404, message: "Product not found" });
         }
 
-        const deletedProduct = await Cart.findByIdAndDelete(cartId);
+        const deletedProduct = await Cart.findOneAndDelete({ _id: cartId, user_id: req.user._id });
         return res.status(200).json({ status: 200, message: "Product deleted successfully", data: deletedProduct });
     } catch (err) {
         res.status(500).json({ status: 500, message: "Failed to delete product", error: err.message });
