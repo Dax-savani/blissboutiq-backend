@@ -11,21 +11,22 @@ const {
     handleDeleteSubcategory
 } = require('../controllers/subcategory');
 const multer = require('multer');
+const {auth} = require("../middlewares/auth");
 const storage = multer.memoryStorage();
 const upload = multer({storage: storage});
 
 
 router.get('/', handleGetCategories);
 router.get('/:categoryId', handleGetSingleCategory);
-router.post('/', upload.single("image"), handleCreateCategory);
-router.put('/:categoryId', upload.single("image"), handleEditCategory);
-router.delete('/:categoryId', handleDeleteCategory);
+router.post('/',auth, upload.single("image"), handleCreateCategory);
+router.put('/:categoryId',auth, upload.single("image"), handleEditCategory);
+router.delete('/:categoryId',auth, handleDeleteCategory);
 
 
 router.get('/:categoryId/subcategory', handleGetSubcategories);
-router.post('/:categoryId/subcategory', handleAddSubcategory);
-router.put('/:categoryId/subcategory/:subcategoryId', handleEditSubcategory);
-router.delete('/:categoryId/subcategory/:subcategoryId', handleDeleteSubcategory);
+router.post('/:categoryId/subcategory',auth, handleAddSubcategory);
+router.put('/:categoryId/subcategory/:subcategoryId',auth, handleEditSubcategory);
+router.delete('/:categoryId/subcategory/:subcategoryId',auth, handleDeleteSubcategory);
 
 module.exports = router;
 
