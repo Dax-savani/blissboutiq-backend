@@ -37,6 +37,9 @@ const handleAddSubcategory = asyncHandler(async (req, res) => {
         if (!name) {
             return res.status(400).json({ message: "Subcategory name is required" });
         }
+        if (!categoryId) {
+            return res.status(400).json({ message: "Category is required" });
+        }
         const categoryExists = await Category.findById(categoryId);
         if (!categoryExists) {
             return res.status(404).json({ message: "Category not found" });
