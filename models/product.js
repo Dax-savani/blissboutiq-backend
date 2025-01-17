@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { Schema } = mongoose;
+const {Schema} = mongoose;
 
 // Define color, size, and price schemas (unchanged)
 const colorSchema = new Schema({
@@ -11,7 +11,7 @@ const colorSchema = new Schema({
         type: String,
         required: true,
     },
-}, { _id: false });
+}, {_id: false});
 
 const sizeSchema = new Schema({
     size: {
@@ -24,7 +24,7 @@ const sizeSchema = new Schema({
         required: true,
         default: 0,
     },
-}, { _id: false });
+}, {_id: false});
 
 const productPriceSchema = new Schema({
     orignal_price: {
@@ -35,7 +35,7 @@ const productPriceSchema = new Schema({
         type: String,
         required: true,
     },
-}, { _id: false });
+}, {_id: false});
 
 // Define product schema
 const productSchema = new Schema({
@@ -98,7 +98,7 @@ const productSchema = new Schema({
         type: String,
         enum: ['male', 'female', 'unisex'],
     },
-    isWishlisted:{
+    isWishlisted: {
         type: Boolean,
         default: false,
     },
@@ -112,7 +112,7 @@ const productSchema = new Schema({
             message: "At least one product image is required.",
         },
     },
-}, { timestamps: true });
+}, {timestamps: true});
 
 productSchema.pre('save', async function (next) {
     if (this.subcategory) {

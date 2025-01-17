@@ -72,7 +72,7 @@ const handleCreateProduct = asyncHandler(async (req, res) => {
             category,
             sub_category,
             gender,
-            other_info,
+            other_info: JSON.parse(other_info),
             product_images: imageUrls,
         });
 
