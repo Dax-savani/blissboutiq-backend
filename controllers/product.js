@@ -51,7 +51,7 @@ const handleCreateProduct = asyncHandler(async (req, res) => {
             stock,
             price,
             category,
-            sub_category,
+            subcategory,
             gender,
             other_info,
         } = req.body;
@@ -70,7 +70,7 @@ const handleCreateProduct = asyncHandler(async (req, res) => {
             stock,
             price: JSON.parse(price),
             category,
-            sub_category,
+            subcategory,
             gender,
             other_info: JSON.parse(other_info),
             product_images: imageUrls,
