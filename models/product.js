@@ -83,11 +83,11 @@ const productSchema = new Schema({
     category: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Category",
-        required: false, // Category is derived from Subcategory
+        required: false,
     },
     subcategory: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Subcategory", // Reference to Subcategory
+        ref: "Subcategory",
         required: true,
     },
     other_info: {

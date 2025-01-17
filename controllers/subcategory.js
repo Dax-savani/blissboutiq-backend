@@ -34,30 +34,24 @@ const handleAddSubcategory = asyncHandler(async (req, res) => {
     try {
         const { categoryId } = req.params;
         const { name } = req.body;
-
         if (!name) {
             return res.status(400).json({ message: "Subcategory name is required" });
         }
-
         const categoryExists = await Category.findById(categoryId);
         if (!categoryExists) {
             return res.status(404).json({ message: "Category not found" });
         }
-
         const subcategoryExists = await Subcategory.findOne({
             name,
             categoryId,
         });
-
         if (subcategoryExists) {
             return res.status(400).json({ message: "Subcategory already exists" });
         }
-
         const subcategory = await Subcategory.create({
             name,
             categoryId,
         });
-
         res.status(201).json({
             status: 201,
             message: "Subcategory created successfully",
