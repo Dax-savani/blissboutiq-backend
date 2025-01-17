@@ -50,7 +50,7 @@ const handleAddSubcategory = asyncHandler(async (req, res) => {
         }
         const subcategory = await Subcategory.create({
             name,
-            categoryId,
+            category: categoryId,
         });
         res.status(201).json({
             status: 201,
