@@ -8,6 +8,7 @@ const {
     handleGetSubcategories,
     handleAddSubcategory,
     handleEditSubcategory,
+    handleGetSingleSubcategory,
     handleDeleteSubcategory
 } = require('../controllers/subcategory');
 const multer = require('multer');
@@ -24,6 +25,7 @@ router.delete('/:categoryId',auth, handleDeleteCategory);
 
 
 router.get('/:categoryId/subcategory', handleGetSubcategories);
+router.get('/subcategory/:subcategoryId', handleGetSingleSubcategory);
 router.post('/:categoryId/subcategory',auth, handleAddSubcategory);
 router.put('/:categoryId/subcategory/:subcategoryId',auth, handleEditSubcategory);
 router.delete('/:categoryId/subcategory/:subcategoryId',auth, handleDeleteSubcategory);

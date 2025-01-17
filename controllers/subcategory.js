@@ -27,7 +27,30 @@ const handleGetSubcategories = asyncHandler(async (req, res) => {
         });
     }
 });
+const handleGetSingleSubcategory = asyncHandler(async (req, res) => {
+    try {
+        const { subcategoryId } = req.params;
 
+        const subcategory = await Subcategory.findById(subcategoryId).populate('category', 'name image');
+
+        if (!subcategory) {
+            return res.status(404).json({ message: "Subcategory not found" });
+        }
+
+        res.status(200).json({
+            status: 200,
+            message: "Subcategory fetched successfully",
+            data: subcategory,
+        });
+    } catch (error) {
+        console.error("Error fetching subcategory:", error.message);
+        res.status(500).json({
+            status: 500,
+            message: "Failed to fetch subcategory",
+            error: error.message,
+        });
+    }
+});
 
 const handleAddSubcategory = asyncHandler(async (req, res) => {
     try {
@@ -132,5 +155,6 @@ module.exports = {
     handleGetSubcategories,
     handleAddSubcategory,
     handleEditSubcategory,
+    handleGetSingleSubcategory,
     handleDeleteSubcategory,
 };
