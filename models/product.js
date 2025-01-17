@@ -98,6 +98,10 @@ const productSchema = new Schema({
         type: String,
         enum: ['male', 'female', 'unisex'],
     },
+    isWishlisted:{
+        type: Boolean,
+        default: false,
+    },
     product_images: {
         type: [String],
         required: true,
