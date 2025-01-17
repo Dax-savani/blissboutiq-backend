@@ -9,8 +9,8 @@ const upload = multer({storage: storage});
 router.post('/', auth,upload.array("product_images",10), handleCreateProduct);
 router.put('/:productId',auth, upload.array("product_images",10), handleEditProduct);
 router.delete('/:productId', auth,handleDeleteProduct);
-router.get('/product', handleGetProduct);
-router.get('/product/:productId', handleGetSingleProduct);
+router.get('/', handleGetProduct);
+router.get('/:productId', handleGetSingleProduct);
 
 
 module.exports = router;
