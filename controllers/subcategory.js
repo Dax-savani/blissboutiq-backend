@@ -6,13 +6,12 @@ const asyncHandler = require("express-async-handler");
 const handleGetSubcategories = asyncHandler(async (req, res) => {
     try {
         const { categoryId } = req.params;
-
         const categoryExists = await Category.findById(categoryId);
         if (!categoryExists) {
             return res.status(404).json({ message: "Category not found" });
         }
 
-        const subcategories = await Subcategory.find({ categoryId });
+        const subcategories = await Subcategory.find({ category:categoryId });
 
         res.status(200).json({
             status: 200,
@@ -46,7 +45,7 @@ const handleAddSubcategory = asyncHandler(async (req, res) => {
         }
         const subcategoryExists = await Subcategory.findOne({
             name,
-            categoryId,
+            category:categoryId,
         });
         if (subcategoryExists) {
             return res.status(400).json({ message: "Subcategory already exists" });
@@ -58,7 +57,7 @@ const handleAddSubcategory = asyncHandler(async (req, res) => {
         res.status(201).json({
             status: 201,
             message: "Subcategory created successfully",
-            data: subcategory,
+            data: subcategory
         });
     } catch (error) {
         console.error("Error creating subcategory:", error.message);
