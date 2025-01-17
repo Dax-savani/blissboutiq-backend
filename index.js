@@ -36,7 +36,7 @@ app.use("/api/product",  productRouter);
 app.use("/api/cart", auth, cartRouter);
 app.use("/api/order", auth, orderRouter);
 app.use("/api/category",  categoryRouter);
-app.use("/api/wishlist",  wishlistRouter);
+app.use("/api/wishlist",auth,  wishlistRouter);
 
 
 app.use(notFound);
