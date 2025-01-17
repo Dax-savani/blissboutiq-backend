@@ -47,4 +47,34 @@ const handleLoginCtrl = asyncHandler(async (req, res) => {
 
 })
 
-module.exports = {handleCreateUser, handleLoginCtrl};
+const handleGetMe = asyncHandler(async (req, res) => {
+    const userId = req.user?._id;
+
+    if (!userId) {
+        res.status(401);
+        throw new Error("Not authorized, token failed");
+    }
+
+    const user = await User.findById(userId).select("-password");
+
+    if (!user) {
+        res.status(404);
+        throw new Error("User not found");
+    }
+    res.status(200).json({
+        data: {
+            id: user._id,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            user_name: user.user_name,
+            dob: user.dob,
+            phone_number: user.phone_number,
+            email: user.email,
+            address_details: user.address_details,
+        },
+        message: "User details retrieved successfully",
+        status: 200,
+    });
+});
+
+module.exports = {handleCreateUser, handleLoginCtrl , handleGetMe};
