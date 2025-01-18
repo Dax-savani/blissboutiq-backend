@@ -8,8 +8,6 @@ const {uploadFiles} = require('../helpers/productImage');
 const handleGetProduct = asyncHandler(async (req, res) => {
     try {
         const { categoryId } = req.query;
-
-        // Validate and convert categoryId to ObjectId if it exists
         let filter = {};
         if (categoryId) {
             if (!mongoose.Types.ObjectId.isValid(categoryId)) {
@@ -17,7 +15,6 @@ const handleGetProduct = asyncHandler(async (req, res) => {
             }
             filter = { category: new mongoose.Types.ObjectId(categoryId) };
         }
-console.log(filter)
         const products = await Product.find(filter).populate('category', 'name image');
         const cartProducts = await Cart.find({});
         const cartProductsIds = new Set(cartProducts.map((item) => item.product_id.toString()));
