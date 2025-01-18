@@ -1,5 +1,6 @@
 const Product = require('../models/product');
 const Cart = require('../models/cart');
+const mongoose = require('mongoose');
 const Wishlist = require('../models/wishlist');
 const asyncHandler = require("express-async-handler");
 const {uploadFiles} = require('../helpers/productImage');
@@ -7,7 +8,16 @@ const {uploadFiles} = require('../helpers/productImage');
 const handleGetProduct = asyncHandler(async (req, res) => {
     try {
         const { categoryId } = req.query;
-        const filter = categoryId ? { category: categoryId } : {};
+
+        // Validate and convert categoryId to ObjectId if it exists
+        let filter = {};
+        if (categoryId) {
+            if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+                return res.status(400).json({ message: "Invalid category ID" });
+            }
+            filter = { category: new mongoose.Types.ObjectId(categoryId) };
+        }
+console.log(filter)
         const products = await Product.find(filter).populate('category', 'name image');
         const cartProducts = await Cart.find({});
         const cartProductsIds = new Set(cartProducts.map((item) => item.product_id.toString()));
@@ -18,12 +28,14 @@ const handleGetProduct = asyncHandler(async (req, res) => {
                 isCart: cartProductsIds.has(item._id.toString())
             };
         });
+
         return res.json(productsWithCartStatus);
     } catch (error) {
         console.error("Error fetching products:", error.message);
         res.status(500).json({ message: "Failed to fetch products" });
     }
 });
+
 
 
 const handleGetSingleProduct = asyncHandler(async (req, res) => {
