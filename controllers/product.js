@@ -1,5 +1,6 @@
 const Product = require('../models/product');
 const Cart = require('../models/cart');
+const Wishlist = require('../models/wishlist');
 const asyncHandler = require("express-async-handler");
 const {uploadFiles} = require('../helpers/productImage');
 
@@ -165,15 +166,30 @@ const handleEditProduct = asyncHandler(async (req, res) => {
 
 
 const handleDeleteProduct = asyncHandler(async (req, res) => {
-    const deletedProduct = await Product.findByIdAndDelete(req.params.productId);
-    if (deletedProduct) {
-        return res.json({message: "Product removed", deletedProduct})
-    } else {
-        res.status(404);
-        throw new Error('Product not found');
+    try {
+        const { productId } = req.params;
+        const deletedProduct = await Product.findByIdAndDelete(productId);
+        if (!deletedProduct) {
+            return res.status(404).json({ status: 404, message: 'Product not found' });
+        }
+        await Cart.deleteMany({ product_id: productId });
+        const wishlistItems = await Wishlist.find({ product_id: productId });
+        if (wishlistItems.length > 0) {
+            await Wishlist.deleteMany({ product_id: productId });
+            deletedProduct.isWishlisted = false;
+            await deletedProduct.save();
+        }
+        return res.status(200).json({
+            status: 200,
+            message: 'Product and related cart/wishlist entries deleted successfully',
+            data: deletedProduct,
+        });
+    } catch (err) {
+        console.error("Error deleting product and related entries:", err);
+        return res.status(500).json({ status: 500, message: 'Failed to delete product', error: err.message });
     }
-    return res.json(deletedProduct)
-})
+});
+
 
 
 module.exports = {handleCreateProduct, handleGetProduct, handleDeleteProduct, handleGetSingleProduct, handleEditProduct}
