@@ -1,5 +1,6 @@
 const Wishlist = require('../models/wishlist');
 const Product = require('../models/product');
+const mongoose = require('mongoose');
 const asyncHandler = require('express-async-handler');
 
 const handleGetWishlist = asyncHandler(async (req, res) => {
@@ -39,21 +40,28 @@ const handleAddWishlist = asyncHandler(async (req, res) => {
 });
 
 const handleRemoveWishlist = asyncHandler(async (req, res) => {
-    const {productId} = req.params;
+    const { productId } = req.params;
 
     try {
-        const wishlistItem = await Wishlist.findByIdAndDelete({product_id: productId});
-        if (!wishlistItem) {
-            return res.status(404).json({status: 404, message: 'Wishlist item not found'});
+        // Validate productId
+        if (!mongoose.Types.ObjectId.isValid(productId)) {
+            return res.status(400).json({ status: 400, message: 'Invalid product ID' });
         }
 
-        const product = await Product.findById(wishlistItem.product_id);
+        // Find and delete the wishlist item based on product_id
+        const wishlistItem = await Wishlist.findOneAndDelete({ product_id: productId });
+        if (!wishlistItem) {
+            return res.status(404).json({ status: 404, message: 'Wishlist item not found' });
+        }
+
+        // Update the product's isWishlisted field if the product exists
+        const product = await Product.findById(productId);
         if (product) {
             product.isWishlisted = false;
             await product.save();
         }
 
-        return res.status(200).json({status: 200, message: 'Product removed from wishlist', data: wishlistItem});
+        return res.status(200).json({ status: 200, message: 'Product removed from wishlist', data: wishlistItem });
     } catch (err) {
         console.error("Error removing product from wishlist:", err);
         return res.status(500).json({
