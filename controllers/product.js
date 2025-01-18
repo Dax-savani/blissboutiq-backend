@@ -94,8 +94,9 @@ const handleEditProduct = asyncHandler(async (req, res) => {
         stock,
         category,
         price,
-        sub_category,
+        subcategory,
         gender,
+        other_info
     } = req.body;
 
     const files = req.files;
@@ -135,7 +136,8 @@ const handleEditProduct = asyncHandler(async (req, res) => {
                 stock,
                 category,
                 price: JSON.parse(price),
-                sub_category,
+                other_info: JSON.parse(other_info),
+                subcategory,
                 gender,
                 product_images: existingImages,
             },
