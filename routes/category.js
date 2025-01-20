@@ -2,6 +2,7 @@ const router = require('express').Router();
 const { handleGetCategories,
     handleGetSingleCategory,
     handleCreateCategory,
+    handleGetCategoriesByGender,
     handleEditCategory,
     handleDeleteCategory} = require('../controllers/category');
 const {
@@ -18,6 +19,7 @@ const storage = multer.memoryStorage();
 const upload = multer({storage: storage});
 
 
+router.get('/gender-wise', handleGetCategoriesByGender);
 router.get('/', handleGetCategories);
 router.get('/:categoryId', handleGetSingleCategory);
 router.post('/',auth, upload.single("image"), handleCreateCategory);

@@ -1,4 +1,5 @@
 const Category = require("../models/category");
+const Product = require("../models/product");
 const asyncHandler = require("express-async-handler");
 const {uploadFiles} = require("../helpers/productImage");
 
@@ -157,10 +158,51 @@ const handleDeleteCategory = asyncHandler(async (req, res) => {
     }
 });
 
+const handleGetCategoriesByGender = asyncHandler(async (req, res) => {
+    try {
+        const genders = await Product.distinct("gender");
+
+        const categoriesByGender = await Promise.all(
+            genders.map(async (gender) => {
+                const products = await Product.find({ gender }).populate("category");
+
+                const uniqueCategories = [];
+                const categorySet = new Set();
+
+                products.forEach((product) => {
+                    const { name, image } = product.category || {};
+                    if (product.category && !categorySet.has(name)) {
+                        categorySet.add(name);
+                        uniqueCategories.push({ name, image });
+                    }
+                });
+
+                return {
+                    gender,
+                    categories: uniqueCategories,
+                };
+            })
+        );
+
+        res.status(200).json({
+            status: 200,
+            message: "Categories fetched successfully by gender",
+            data: categoriesByGender,
+        });
+    } catch (error) {
+        console.error("Error fetching categories by gender:", error.message);
+        res.status(500).json({
+            status: 500,
+            message: "Failed to fetch categories by gender",
+            error: error.message,
+        });
+    }
+});
 
 module.exports = {
     handleGetCategories,
     handleGetSingleCategory,
+    handleGetCategoriesByGender,
     handleCreateCategory,
     handleEditCategory,
     handleDeleteCategory,

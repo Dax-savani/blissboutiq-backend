@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const {Schema} = mongoose;
 
-// Define color, size, and price schemas (unchanged)
 const colorSchema = new Schema({
     color: {
         type: String,
@@ -37,7 +36,6 @@ const productPriceSchema = new Schema({
     },
 }, {_id: false});
 
-// Define product schema
 const productSchema = new Schema({
     title: {
         type: String,
