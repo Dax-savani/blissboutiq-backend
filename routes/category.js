@@ -9,6 +9,7 @@ const {
     handleAddSubcategory,
     handleEditSubcategory,
     handleGetSingleSubcategory,
+    handleGetSubcategoriesGroupedByCategory,
     handleDeleteSubcategory
 } = require('../controllers/subcategory');
 const multer = require('multer');
@@ -24,6 +25,7 @@ router.put('/:categoryId',auth, upload.single("image"), handleEditCategory);
 router.delete('/:categoryId',auth, handleDeleteCategory);
 
 
+router.get('/subcategory/list', handleGetSubcategoriesGroupedByCategory);
 router.get('/:categoryId/subcategory', handleGetSubcategories);
 router.get('/subcategory/:subcategoryId', handleGetSingleSubcategory);
 router.post('/:categoryId/subcategory',auth, handleAddSubcategory);

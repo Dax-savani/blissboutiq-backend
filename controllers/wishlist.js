@@ -43,18 +43,15 @@ const handleRemoveWishlist = asyncHandler(async (req, res) => {
     const { productId } = req.params;
 
     try {
-        // Validate productId
         if (!mongoose.Types.ObjectId.isValid(productId)) {
             return res.status(400).json({ status: 400, message: 'Invalid product ID' });
         }
 
-        // Find and delete the wishlist item based on product_id
         const wishlistItem = await Wishlist.findOneAndDelete({ product_id: productId });
         if (!wishlistItem) {
             return res.status(404).json({ status: 404, message: 'Wishlist item not found' });
         }
 
-        // Update the product's isWishlisted field if the product exists
         const product = await Product.findById(productId);
         if (product) {
             product.isWishlisted = false;

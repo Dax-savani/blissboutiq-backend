@@ -27,6 +27,56 @@ const handleGetSubcategories = asyncHandler(async (req, res) => {
         });
     }
 });
+const handleGetSubcategoriesGroupedByCategory = asyncHandler(async (req, res) => {
+    try {
+        const subcategoriesGrouped = await Subcategory.aggregate([
+            {
+                $lookup: {
+                    from: "categories",
+                    localField: "category",
+                    foreignField: "_id",
+                    as: "categoryDetails",
+                },
+            },
+            {
+                $unwind: "$categoryDetails",
+            },
+            {
+                $group: {
+                    _id: "$categoryDetails._id",
+                    categoryName: { $first: "$categoryDetails.name" },
+                    subcategories: {
+                        $push: {
+                            _id: "$_id",
+                            name: "$name",
+                        },
+                    },
+                },
+            },
+            {
+                $project: {
+                    _id: 1,
+                    categoryName: 1,
+                    subcategories: 1,
+                },
+            },
+        ]);
+
+        res.status(200).json({
+            status: 200,
+            message: "Subcategories grouped by category fetched successfully",
+            data: subcategoriesGrouped,
+        });
+    } catch (error) {
+        console.error("Error fetching grouped subcategories:", error.message);
+        res.status(500).json({
+            status: 500,
+            message: "Failed to fetch grouped subcategories",
+            error: error.message,
+        });
+    }
+});
+
 const handleGetSingleSubcategory = asyncHandler(async (req, res) => {
     try {
         const { subcategoryId } = req.params;
@@ -157,4 +207,5 @@ module.exports = {
     handleEditSubcategory,
     handleGetSingleSubcategory,
     handleDeleteSubcategory,
+    handleGetSubcategoriesGroupedByCategory
 };
