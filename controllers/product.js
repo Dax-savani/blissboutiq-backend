@@ -7,14 +7,20 @@ const {uploadFiles} = require('../helpers/productImage');
 
 const handleGetProduct = asyncHandler(async (req, res) => {
     try {
-        const { categoryId } = req.query;
+        const { categoryId, gender } = req.query;
         let filter = {};
+
         if (categoryId) {
             if (!mongoose.Types.ObjectId.isValid(categoryId)) {
                 return res.status(400).json({ message: "Invalid category ID" });
             }
-            filter = { category: new mongoose.Types.ObjectId(categoryId) };
+            filter.category = new mongoose.Types.ObjectId(categoryId);
         }
+
+        if (gender) {
+            filter.gender = gender;
+        }
+
         const products = await Product.find(filter)
             .sort({ createdAt: -1 })
             .populate('category', 'name image');
