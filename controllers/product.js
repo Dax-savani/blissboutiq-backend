@@ -8,7 +8,7 @@ const { uploadFiles } = require('../helpers/productImage');
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 const handleGetProduct = asyncHandler(async (req, res) => {
-    const { categoryId, gender } = req.query;
+    const { categoryId, gender, subcategoryId } = req.query;
     const filter = {};
 
     if (categoryId) {
@@ -17,7 +17,12 @@ const handleGetProduct = asyncHandler(async (req, res) => {
         }
         filter.category = categoryId;
     }
-
+    if (subcategoryId) {
+        if (!isValidObjectId(subcategoryId)) {
+            return res.status(400).json({ status: 400, message: "Invalid subcategory ID" });
+        }
+        filter.subcategory = subcategoryId;
+    }
     if (gender) {
         filter.gender = gender;
     }
