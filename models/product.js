@@ -1,17 +1,6 @@
 const mongoose = require("mongoose");
 const {Schema} = mongoose;
 
-const colorSchema = new Schema({
-    color: {
-        type: String,
-        required: true,
-    },
-    hex: {
-        type: String,
-        required: true,
-    },
-}, {_id: false});
-
 const sizeSchema = new Schema({
     size: {
         type: String,
@@ -23,10 +12,11 @@ const sizeSchema = new Schema({
         required: true,
         default: 0,
     },
-}, {_id: false});
+}, { _id: false });
+
 
 const productPriceSchema = new Schema({
-    orignal_price: {
+    original_price: {
         type: String,
         required: true,
     },
@@ -34,7 +24,43 @@ const productPriceSchema = new Schema({
         type: String,
         required: true,
     },
-}, {_id: false});
+}, { _id: false });
+
+
+const colorSchema = new Schema({
+    color: {
+        type: String,
+        required: true,
+    },
+    hex: {
+        type: String,
+        required: true,
+    },
+    product_images: {
+        type: [String],
+        required: true,
+        validate: {
+            validator: function (value) {
+                return value.length > 0;
+            },
+            message: "At least one product image is required for each color.",
+        },
+    },
+    size_options: {
+        type: [sizeSchema],
+        required: true,
+        validate: {
+            validator: function (value) {
+                return value.length > 0;
+            },
+            message: "At least one size option is required for each color.",
+        },
+    },
+    price: {
+        type: productPriceSchema,
+        required: true,
+    },
+}, { _id: false });
 
 const productSchema = new Schema({
     title: {
@@ -55,28 +81,9 @@ const productSchema = new Schema({
             message: "At least one Color option is required.",
         },
     },
-    price: {
-        type: productPriceSchema,
-        required: true,
-    },
-    size_options: {
-        type: [sizeSchema],
-        required: true,
-        validate: {
-            validator: function (value) {
-                return value.length > 0;
-            },
-            message: "At least one size option is required.",
-        },
-    },
     instruction: {
         type: [String],
         required: false,
-    },
-    stock: {
-        type: Number,
-        required: true,
-        default: 1,
     },
     category: {
         type: mongoose.Schema.Types.ObjectId,
@@ -94,23 +101,13 @@ const productSchema = new Schema({
     },
     gender: {
         type: String,
-        enum: ['male', 'female', 'unisex','kids'],
+        enum: ['male', 'female', 'unisex', 'kids'],
     },
     isWishlisted: {
         type: Boolean,
         default: false,
     },
-    product_images: {
-        type: [String],
-        required: true,
-        validate: {
-            validator: function (value) {
-                return value.length > 0;
-            },
-            message: "At least one product image is required.",
-        },
-    },
-}, {timestamps: true});
+}, { timestamps: true });
 
 productSchema.pre('save', async function (next) {
     if (this.subcategory) {

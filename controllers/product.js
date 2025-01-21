@@ -1,214 +1,167 @@
 const Product = require('../models/product');
 const Cart = require('../models/cart');
-const mongoose = require('mongoose');
 const Wishlist = require('../models/wishlist');
+const mongoose = require('mongoose');
 const asyncHandler = require("express-async-handler");
-const {uploadFiles} = require('../helpers/productImage');
+const { uploadFiles } = require('../helpers/productImage');
+
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 const handleGetProduct = asyncHandler(async (req, res) => {
+    const { categoryId, gender } = req.query;
+    const filter = {};
+
+    if (categoryId) {
+        if (!isValidObjectId(categoryId)) {
+            return res.status(400).json({ status: 400, message: "Invalid category ID" });
+        }
+        filter.category = categoryId;
+    }
+
+    if (gender) {
+        filter.gender = gender;
+    }
+
     try {
-        const { categoryId, gender } = req.query;
-        let filter = {};
-
-        if (categoryId) {
-            if (!mongoose.Types.ObjectId.isValid(categoryId)) {
-                return res.status(400).json({ message: "Invalid category ID" });
-            }
-            filter.category = new mongoose.Types.ObjectId(categoryId);
-        }
-
-        if (gender) {
-            filter.gender = gender;
-        }
-
         const products = await Product.find(filter)
             .sort({ createdAt: -1 })
             .populate('category', 'name image');
 
         const cartProducts = await Cart.find({});
-        const cartProductsIds = new Set(cartProducts.map((item) => item.product_id.toString()));
+        const cartProductIds = new Set(cartProducts.map(item => item.product_id.toString()));
 
-        const productsWithCartStatus = products.map((item) => {
-            const productObj = item.toObject();
-            return {
-                ...productObj,
-                isCart: cartProductsIds.has(item._id.toString())
-            };
-        });
+        const productsWithCartStatus = products.map(product => ({
+            ...product.toObject(),
+            isCart: cartProductIds.has(product._id.toString()),
+        }));
 
-        return res.json(productsWithCartStatus);
+        return res.json({ status: 200, message: "Products fetched successfully", data: productsWithCartStatus });
     } catch (error) {
         console.error("Error fetching products:", error.message);
-        res.status(500).json({ message: "Failed to fetch products" });
+        res.status(500).json({ status: 500, message: "Failed to fetch products" });
     }
 });
-
-
 
 const handleGetSingleProduct = asyncHandler(async (req, res) => {
+    const { productId } = req.params;
+
+    if (!isValidObjectId(productId)) {
+        return res.status(400).json({ status: 400, message: "Invalid product ID" });
+    }
+
     try {
-        const product = await Product.findById(req.params.productId).populate('category', 'name image');
-        if (product) {
-            return res.json(product);
-        } else {
-            res.status(404).json({ message: "Product not found" });
+        const product = await Product.findById(productId).populate('category', 'name image');
+        if (!product) {
+            return res.status(404).json({ status: 404, message: "Product not found" });
         }
+
+        return res.json({ status: 200, message: "Product fetched successfully", data: product });
     } catch (error) {
         console.error("Error fetching product:", error.message);
-        res.status(500).json({ message: "Failed to fetch product" });
+        res.status(500).json({ status: 500, message: "Failed to fetch product" });
     }
 });
 
-
 const handleCreateProduct = asyncHandler(async (req, res) => {
+    const { title, description, color_options, instruction, category, subcategory, gender, other_info } = req.body;
+    const files = req.files;
+
+    if (!files || files.length === 0) {
+        return res.status(400).json({ status: 400, message: "Product images are required" });
+    }
+
     try {
-        const {
+        const imageUrls = await uploadFiles(files.map(file => file.buffer));
+
+        const newProduct = new Product({
             title,
             description,
-            size_options,
-            color_options,
-            instruction,
-            stock,
-            price,
-            category,
-            subcategory,
-            gender,
-            other_info,
-        } = req.body;
-
-        const files = req.files;
-
-        const fileBuffers = files.map(file => file.buffer);
-
-        const imageUrls = await uploadFiles(fileBuffers);
-        const createdProduct = await Product.create({
-            title,
-            description,
-            size_options: JSON.parse(size_options),
             color_options: JSON.parse(color_options),
-            instruction: JSON.parse(instruction),
-            stock,
-            price: JSON.parse(price),
+            instruction: instruction ? JSON.parse(instruction) : undefined,
             category,
             subcategory,
             gender,
-            other_info: JSON.parse(other_info),
+            other_info: other_info ? JSON.parse(other_info) : undefined,
             product_images: imageUrls,
         });
 
-        return res.status(201).json(createdProduct);
+        const savedProduct = await newProduct.save();
+        return res.status(201).json({ status: 201, message: "Product created successfully", data: savedProduct });
     } catch (error) {
         console.error("Error creating product:", error.message);
-        return res.status(500).json({status: 500, message: "Internal Server Error"});
+        res.status(500).json({ status: 500, message: "Failed to create product" });
     }
 });
 
 const handleEditProduct = asyncHandler(async (req, res) => {
-    const {productId} = req.params;
-    const {
-        title,
-        description,
-        size_options,
-        color_options,
-        instruction,
-        stock,
-        category,
-        price,
-        subcategory,
-        gender,
-        other_info
-    } = req.body;
+    const { productId } = req.params;
 
+    if (!isValidObjectId(productId)) {
+        return res.status(400).json({ status: 400, message: "Invalid product ID" });
+    }
+
+    const { title, description, color_options, instruction, category, subcategory, gender, other_info } = req.body;
     const files = req.files;
 
-    const existingProduct = await Product.findById(productId);
-    if (!existingProduct) {
-        return res.status(404).json({status: 404, message: "Product not found"});
-    }
-    let existingImages = existingProduct.product_images || [];
-    let uploadedImages = [];
-    if (files && files.length > 0) {
-        for (const file of req.files) {
-            if (file.path && file.path.startsWith("http")) {
-                uploadedImages.push(file.path);
-            } else if (file.buffer) {
-                const url = await uploadFiles(file.buffer);
-                if (url) {
-                    uploadedImages.push(url);
-                }
-            } else {
-                console.warn("File structure not as expected:", file);
-            }
+    try {
+        const existingProduct = await Product.findById(productId);
+        if (!existingProduct) {
+            return res.status(404).json({ status: 404, message: "Product not found" });
         }
 
-        existingImages = [...existingImages, ...uploadedImages];
-    }
+        const uploadedImages = files ? await uploadFiles(files.map(file => file.buffer)) : [];
+        const updatedImages = [...existingProduct.product_images, ...uploadedImages];
 
-    try {
         const updatedProduct = await Product.findByIdAndUpdate(
             productId,
             {
                 title,
                 description,
-                size_options: size_options ? JSON.parse(size_options) : undefined,
-                color_options: color_options ? JSON.parse(color_options) : undefined,
-                instruction,
-                stock,
+                color_options: color_options ? JSON.parse(color_options) : existingProduct.color_options,
+                instruction: instruction ? JSON.parse(instruction) : existingProduct.instruction,
                 category,
-                price: JSON.parse(price),
-                other_info: JSON.parse(other_info),
                 subcategory,
                 gender,
-                product_images: existingImages,
+                other_info: other_info ? JSON.parse(other_info) : existingProduct.other_info,
+                product_images: updatedImages,
             },
-            {runValidators: true, new: true}
+            { new: true, runValidators: true }
         );
 
-        if (updatedProduct) {
-            return res.status(200).json({
-                status: 200,
-                message: "Product updated successfully",
-                data: updatedProduct,
-            });
-        } else {
-            res.status(404).json({status: 404, message: "Product not found"});
-            throw new Error("Product not found");
-        }
-    } catch (err) {
-        console.error("Error updating Product", err.message);
-        return res.status(500).json({
-            message: "Failed to update Product",
-            error: err.message,
-        });
+        return res.json({ status: 200, message: "Product updated successfully", data: updatedProduct });
+    } catch (error) {
+        console.error("Error updating product:", error.message);
+        res.status(500).json({ status: 500, message: "Failed to update product" });
     }
 });
-
 
 const handleDeleteProduct = asyncHandler(async (req, res) => {
+    const { productId } = req.params;
+
+    if (!isValidObjectId(productId)) {
+        return res.status(400).json({ status: 400, message: "Invalid product ID" });
+    }
+
     try {
-        const { productId } = req.params;
         const deletedProduct = await Product.findByIdAndDelete(productId);
         if (!deletedProduct) {
-            return res.status(404).json({ status: 404, message: 'Product not found' });
+            return res.status(404).json({ status: 404, message: "Product not found" });
         }
+
         await Cart.deleteMany({ product_id: productId });
-        const wishlistItems = await Wishlist.find({ product_id: productId });
-        if (wishlistItems.length > 0) {
-            await Wishlist.deleteMany({ product_id: productId });
-            deletedProduct.isWishlisted = false;
-            await deletedProduct.save();
-        }
-        return res.status(200).json({
-            status: 200,
-            message: 'Product and related cart/wishlist entries deleted successfully',
-            data: deletedProduct,
-        });
-    } catch (err) {
-        console.error("Error deleting product and related entries:", err);
-        return res.status(500).json({ status: 500, message: 'Failed to delete product', error: err.message });
+        await Wishlist.deleteMany({ product_id: productId });
+
+        return res.json({ status: 200, message: "Product and related entries deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting product:", error.message);
+        res.status(500).json({ status: 500, message: "Failed to delete product" });
     }
 });
 
-
-
-module.exports = {handleCreateProduct, handleGetProduct, handleDeleteProduct, handleGetSingleProduct, handleEditProduct}
+module.exports = {
+    handleGetProduct,
+    handleGetSingleProduct,
+    handleCreateProduct,
+    handleEditProduct,
+    handleDeleteProduct,
+};
