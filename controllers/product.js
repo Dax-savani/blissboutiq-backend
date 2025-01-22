@@ -78,16 +78,19 @@ const handleCreateProduct = asyncHandler(async (req, res) => {
         }
 
         const files = req.files;
-        const updatedColorOptions = parsedColorOptions.map((colorOption, index) => {
+
+        const updatedColorOptions = await Promise.all(parsedColorOptions.map(async (colorOption, index) => {
             const productImages = files
                 .filter(file => file.fieldname === `product_images[${index}]`)
                 .map(file => file.buffer);
 
+            const uploadedImages = await uploadFiles(productImages);  // Assuming uploadFiles returns a promise
+
             return {
                 ...colorOption,
-                product_images: uploadFiles(productImages),
+                product_images: uploadedImages,
             };
-        });
+        }));
 
         const newProduct = new Product({
             title,
@@ -107,6 +110,7 @@ const handleCreateProduct = asyncHandler(async (req, res) => {
         res.status(500).json({ status: 500, message: "Failed to create product" });
     }
 });
+
 
 const handleEditProduct = asyncHandler(async (req, res) => {
     const { productId } = req.params;
