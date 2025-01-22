@@ -71,32 +71,29 @@ const handleCreateProduct = asyncHandler(async (req, res) => {
     const { title, description, category, subcategory, gender, color_options, other_info, instruction } = req.body;
 
     try {
-        // Parse `color_options` from JSON (if sent as a stringified array)
         const parsedColorOptions = typeof color_options === 'string' ? JSON.parse(color_options) : color_options;
 
         if (!Array.isArray(parsedColorOptions)) {
             return res.status(400).json({ status: 400, message: "Invalid color_options format" });
         }
 
-        // Map files to `color_options`
         const files = req.files;
         const updatedColorOptions = parsedColorOptions.map((colorOption, index) => {
             const productImages = files
-                .filter(file => file.fieldname === `product_images[${index}]`) // Match files for this color option
-                .map(file => file.buffer); // Get file buffers
+                .filter(file => file.fieldname === `product_images[${index}]`)
+                .map(file => file.buffer);
 
             return {
                 ...colorOption,
-                product_images: uploadFiles(productImages), // Replace with your file upload logic
+                product_images: uploadFiles(productImages),
             };
         });
 
-        // Create the new product
         const newProduct = new Product({
             title,
             description,
             color_options: updatedColorOptions,
-            instruction: instruction ? [instruction] : undefined,
+            instruction: instruction ? JSON.parse(instruction) : undefined,
             category,
             subcategory,
             gender,
