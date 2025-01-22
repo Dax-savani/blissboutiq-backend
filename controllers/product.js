@@ -68,26 +68,39 @@ const handleGetSingleProduct = asyncHandler(async (req, res) => {
 });
 
 const handleCreateProduct = asyncHandler(async (req, res) => {
-    const { title, description, color_options, instruction, category, subcategory, gender, other_info } = req.body;
-    const files = req.files;
-
-    if (!files || files.length === 0) {
-        return res.status(400).json({ status: 400, message: "Product images are required" });
-    }
+    const { title, description, category, subcategory, gender, color_options, other_info, instruction } = req.body;
 
     try {
-        const imageUrls = await uploadFiles(files.map(file => file.buffer));
+        // Parse `color_options` from JSON (if sent as a stringified array)
+        const parsedColorOptions = typeof color_options === 'string' ? JSON.parse(color_options) : color_options;
 
+        if (!Array.isArray(parsedColorOptions)) {
+            return res.status(400).json({ status: 400, message: "Invalid color_options format" });
+        }
+
+        // Map files to `color_options`
+        const files = req.files;
+        const updatedColorOptions = parsedColorOptions.map((colorOption, index) => {
+            const productImages = files
+                .filter(file => file.fieldname === `product_images[${index}]`) // Match files for this color option
+                .map(file => file.buffer); // Get file buffers
+
+            return {
+                ...colorOption,
+                product_images: uploadFiles(productImages), // Replace with your file upload logic
+            };
+        });
+
+        // Create the new product
         const newProduct = new Product({
             title,
             description,
-            color_options: JSON.parse(color_options),
-            instruction: instruction ? JSON.parse(instruction) : undefined,
+            color_options: updatedColorOptions,
+            instruction: instruction ? [instruction] : undefined,
             category,
             subcategory,
             gender,
             other_info: other_info ? JSON.parse(other_info) : undefined,
-            product_images: imageUrls,
         });
 
         const savedProduct = await newProduct.save();
