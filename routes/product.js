@@ -6,7 +6,7 @@ const storage = multer.memoryStorage();
 const upload = multer({storage: storage});
 
 
-router.post('/', auth,upload.array("product_images",20), handleCreateProduct);
+router.post('/', auth,upload.any(), handleCreateProduct);
 router.put('/:productId',auth, upload.array("product_images",20), handleEditProduct);
 router.delete('/:productId', auth,handleDeleteProduct);
 router.get('/', handleGetProduct);
