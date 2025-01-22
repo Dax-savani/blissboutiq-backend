@@ -128,21 +128,41 @@ const handleEditProduct = asyncHandler(async (req, res) => {
             return res.status(404).json({ status: 404, message: "Product not found" });
         }
 
-        const uploadedImages = files ? await uploadFiles(files.map(file => file.buffer)) : [];
-        const updatedImages = [...existingProduct.product_images, ...uploadedImages];
+        const parsedColorOptions = typeof color_options === 'string' ? JSON.parse(color_options) : color_options;
+
+        if (parsedColorOptions && !Array.isArray(parsedColorOptions)) {
+            return res.status(400).json({ status: 400, message: "Invalid color_options format" });
+        }
+
+        const updatedColorOptions = parsedColorOptions
+            ? await Promise.all(parsedColorOptions.map(async (colorOption, index) => {
+                const productImages = files
+                    .filter(file => file.fieldname === `product_images[${index}]`)
+                    .map(file => file.buffer);
+
+                const uploadedImages = await uploadFiles(productImages);
+
+                return {
+                    ...colorOption,
+                    product_images: [
+                        ...(existingProduct.color_options[index]?.product_images || []),
+                        ...uploadedImages,
+                    ],
+                };
+            }))
+            : existingProduct.color_options;
 
         const updatedProduct = await Product.findByIdAndUpdate(
             productId,
             {
-                title,
-                description,
-                color_options: color_options ? JSON.parse(color_options) : existingProduct.color_options,
+                title: title || existingProduct.title,
+                description: description || existingProduct.description,
+                color_options: updatedColorOptions,
                 instruction: instruction ? JSON.parse(instruction) : existingProduct.instruction,
-                category,
-                subcategory,
-                gender,
+                category: category || existingProduct.category,
+                subcategory: subcategory || existingProduct.subcategory,
+                gender: gender || existingProduct.gender,
                 other_info: other_info ? JSON.parse(other_info) : existingProduct.other_info,
-                product_images: updatedImages,
             },
             { new: true, runValidators: true }
         );
@@ -153,6 +173,7 @@ const handleEditProduct = asyncHandler(async (req, res) => {
         res.status(500).json({ status: 500, message: "Failed to update product" });
     }
 });
+
 
 const handleDeleteProduct = asyncHandler(async (req, res) => {
     const { productId } = req.params;
