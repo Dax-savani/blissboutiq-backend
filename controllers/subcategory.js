@@ -117,7 +117,7 @@ const handleAddSubcategory = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: "Category ID is required" });
         }
 
-        if (!files || !files.image || !files.image[0].buffer) {
+        if (!files) {
             return res.status(400).json({ message: "Image file is required" });
         }
 
