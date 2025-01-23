@@ -131,7 +131,7 @@ const handleAddSubcategory = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: "Subcategory already exists under this category" });
         }
 
-        const imageUrl = await uploadFile(files.image[0].buffer);
+        const imageUrl = await uploadFiles(files.image[0].buffer);
 
         const newSubcategory = new Subcategory({
             name,
