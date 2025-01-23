@@ -1,4 +1,5 @@
 const Category = require("../models/category");
+const Subcategory = require("../models/subcategory");
 const Product = require("../models/product");
 const asyncHandler = require("express-async-handler");
 const {uploadFiles} = require("../helpers/productImage");
@@ -161,33 +162,46 @@ const handleDeleteCategory = asyncHandler(async (req, res) => {
 
 const handleGetCategoriesByGender = asyncHandler(async (req, res) => {
     try {
+        // Get distinct genders from the Product collection
         const genders = await Product.distinct("gender");
 
         const categoriesByGender = await Promise.all(
             genders.map(async (gender) => {
+                // Fetch products for the specific gender and populate the category
                 const products = await Product.find({ gender }).populate("category");
 
-                const uniqueCategories = [];
-                const categorySet = new Set();
+                // Group categories and their subcategories
+                const categoryMap = new Map();
 
-                products.forEach((product) => {
-                    const { name, image } = product.category || {};
-                    if (product.category && !categorySet.has(name)) {
-                        categorySet.add(name);
-                        uniqueCategories.push({ name, image });
+                for (const product of products) {
+                    const { category } = product;
+
+                    if (category) {
+                        const subcategories = await Subcategory.find({ category: category._id });
+
+                        if (!categoryMap.has(category._id)) {
+                            categoryMap.set(category._id, {
+                                name: category.name,
+                                image: category.image,
+                                subcategories: subcategories.map((sub) => ({
+                                    name: sub.name,
+                                    image: sub.image,
+                                })),
+                            });
+                        }
                     }
-                });
+                }
 
                 return {
                     gender,
-                    categories: uniqueCategories,
+                    categories: Array.from(categoryMap.values()),
                 };
             })
         );
 
         res.status(200).json({
             status: 200,
-            message: "Categories fetched successfully by gender",
+            message: "Categories with subcategories fetched successfully by gender",
             data: categoriesByGender,
         });
     } catch (error) {
@@ -199,6 +213,7 @@ const handleGetCategoriesByGender = asyncHandler(async (req, res) => {
         });
     }
 });
+
 
 module.exports = {
     handleGetCategories,
