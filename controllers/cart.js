@@ -18,20 +18,20 @@ const handleGetSingleCart = asyncHandler(async (req, res) => {
 });
 
 const handleAddCart = asyncHandler(async (req, res) => {
-    const { product_id, qty, color, size } = req.body;
+    const { product_id, qty, color_id, size } = req.body;
 
     const findedProduct = await Product.findById(product_id);
     if (!findedProduct) {
         return res.status(404).json({ status: 404, message: "Product not found" });
     }
 
-    const isColorValid = findedProduct.color_options.some(option => option.color === color);
-    const isSizeValid = findedProduct.size_options.some(option => option.size === size);
-
+    const isColorValid = findedProduct.color_options.some(option => option._id.toString() === color_id);
     if (!isColorValid) {
         return res.status(400).json({ status: 400, message: "Invalid color selected" });
     }
 
+    const selectedColor = findedProduct.color_options.find(option => option._id.toString() === color_id);
+    const isSizeValid = selectedColor.size_options.some(option => option.size === size);
     if (!isSizeValid) {
         return res.status(400).json({ status: 400, message: "Invalid size selected" });
     }
@@ -40,7 +40,7 @@ const handleAddCart = asyncHandler(async (req, res) => {
         const newCart = await Cart.create({
             user_id: req.user._id,
             product_id,
-            color,
+            color_id,
             size,
             qty
         });
@@ -56,7 +56,7 @@ const handleAddCart = asyncHandler(async (req, res) => {
 
 const handleEditCart = asyncHandler(async (req, res) => {
     const { cartId } = req.params;
-    const { qty, color, size } = req.body;
+    const { qty, color_id, size } = req.body;
 
     if (qty === 0) {
         const removeProduct = await Cart.findOneAndDelete({ _id: cartId, user_id: req.user._id });
@@ -70,10 +70,26 @@ const handleEditCart = asyncHandler(async (req, res) => {
         return res.status(400).json({ status: 400, message: "Quantity is required" });
     }
 
+    const updatedProduct = await Product.findById(req.body.product_id);
+    if (!updatedProduct) {
+        return res.status(404).json({ status: 404, message: "Product not found" });
+    }
+
+    const isColorValid = updatedProduct.color_options.some(option => option._id.toString() === color_id);
+    if (!isColorValid) {
+        return res.status(400).json({ status: 400, message: "Invalid color selected" });
+    }
+
+    const selectedColor = updatedProduct.color_options.find(option => option._id.toString() === color_id);
+    const isSizeValid = selectedColor.size_options.some(option => option.size === size);
+    if (!isSizeValid) {
+        return res.status(400).json({ status: 400, message: "Invalid size selected" });
+    }
+
     try {
         const updatedCart = await Cart.findOneAndUpdate(
             { _id: cartId, user_id: req.user._id },
-            { qty, color, size },
+            { qty, color_id, size },
             { new: true, runValidators: true }
         );
 
