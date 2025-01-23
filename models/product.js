@@ -60,7 +60,7 @@ const colorSchema = new Schema({
         type: productPriceSchema,
         required: true,
     },
-}, { _id: false });
+});
 
 const productSchema = new Schema({
     title: {
