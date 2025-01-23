@@ -53,7 +53,7 @@ const handleGetSingleCategory = asyncHandler(async (req, res) => {
 const handleCreateCategory = asyncHandler(async (req, res) => {
     try {
         const {name} = req.body;
-        const file = req.file; // Single file
+        const file = req.file;
 
         if (!file) {
             return res.status(400).json({message: "Category image is required"});
@@ -68,7 +68,7 @@ const handleCreateCategory = asyncHandler(async (req, res) => {
             return res.status(400).json({message: "Category name already exists"});
         }
 
-        const imageUrl = await uploadFiles([file.buffer]); // Upload single image
+        const imageUrl = await uploadFiles([file.buffer]);
 
         const category = await Category.create({
             name,
@@ -95,7 +95,7 @@ const handleEditCategory = asyncHandler(async (req, res) => {
     try {
         const {categoryId} = req.params;
         const {name} = req.body;
-        const file = req.file; // Single file
+        const file = req.file;
 
         const category = await Category.findById(categoryId);
 
@@ -109,7 +109,7 @@ const handleEditCategory = asyncHandler(async (req, res) => {
 
         let imageUrl = category.image;
         if (file) {
-            const uploadedImages = await uploadFiles([file.buffer]); // Upload single image
+            const uploadedImages = await uploadFiles([file.buffer]);
             imageUrl = uploadedImages[0];
         }
 
@@ -162,15 +162,15 @@ const handleDeleteCategory = asyncHandler(async (req, res) => {
 
 const handleGetCategoriesByGender = asyncHandler(async (req, res) => {
     try {
-        // Get distinct genders from the Product collection
+
         const genders = await Product.distinct("gender");
 
         const categoriesByGender = await Promise.all(
             genders.map(async (gender) => {
-                // Fetch products for the specific gender and populate the category
+
                 const products = await Product.find({gender}).populate("category");
 
-                // Group categories and their subcategories
+
                 const categoryMap = new Map();
 
                 for (const product of products) {
@@ -181,9 +181,11 @@ const handleGetCategoriesByGender = asyncHandler(async (req, res) => {
 
                         if (!categoryMap.has(category._id)) {
                             categoryMap.set(category._id, {
+                                _id: category._id,
                                 name: category.name,
                                 image: category.image,
                                 subcategories: subcategories.map((sub) => ({
+                                    _id: sub._id,
                                     name: sub.name,
                                     image: sub.image,
                                 })),
