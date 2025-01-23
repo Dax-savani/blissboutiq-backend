@@ -160,10 +160,12 @@ const handleEditSubcategory = asyncHandler(async (req, res) => {
     try {
         const { subcategoryId } = req.params;
         const { name } = req.body;
-        const files = req.files;
+        const file = req.file;
+
         if (!name || name.trim() === "") {
             return res.status(400).json({ message: "Subcategory name is required" });
         }
+
         const subcategory = await Subcategory.findById(subcategoryId);
         if (!subcategory) {
             return res.status(404).json({ message: "Subcategory not found" });
@@ -171,8 +173,11 @@ const handleEditSubcategory = asyncHandler(async (req, res) => {
 
         const updateData = { name };
 
-        if (files && files.image && files.image[0].buffer) {
-            updateData.image = await uploadFiles(files.image[0].buffer);
+        if (file && file.buffer) {
+            const imageUrl = await uploadFiles([file.buffer]);
+            updateData.image = imageUrl[0];
+        } else {
+            updateData.image = req.body.image;
         }
 
         const updatedSubcategory = await Subcategory.findByIdAndUpdate(
@@ -195,6 +200,7 @@ const handleEditSubcategory = asyncHandler(async (req, res) => {
         });
     }
 });
+
 
 
 const handleDeleteSubcategory = asyncHandler(async (req, res) => {
