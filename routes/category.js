@@ -30,8 +30,8 @@ router.delete('/:categoryId',auth, handleDeleteCategory);
 router.get('/subcategory/list', handleGetSubcategoriesGroupedByCategory);
 router.get('/:categoryId/subcategory', handleGetSubcategories);
 router.get('/subcategory/:subcategoryId', handleGetSingleSubcategory);
-router.post('/:categoryId/subcategory',auth, handleAddSubcategory);
-router.put('/:categoryId/subcategory/:subcategoryId',auth, handleEditSubcategory);
+router.post('/:categoryId/subcategory',auth, upload.single("image"), handleAddSubcategory);
+router.put('/:categoryId/subcategory/:subcategoryId',auth ,upload.single("image"), handleEditSubcategory);
 router.delete('/:categoryId/subcategory/:subcategoryId',auth, handleDeleteSubcategory);
 
 module.exports = router;

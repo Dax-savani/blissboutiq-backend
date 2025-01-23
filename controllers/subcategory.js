@@ -1,6 +1,7 @@
 const Subcategory = require("../models/subcategory");
 const Category = require("../models/category");
 const asyncHandler = require("express-async-handler");
+const {uploadFiles} = require("../helpers/productImage");
 
 
 const handleGetSubcategories = asyncHandler(async (req, res) => {
@@ -106,31 +107,44 @@ const handleAddSubcategory = asyncHandler(async (req, res) => {
     try {
         const { categoryId } = req.params;
         const { name } = req.body;
-        if (!name) {
+        const files = req.files;
+
+        if (!name || name.trim() === "") {
             return res.status(400).json({ message: "Subcategory name is required" });
         }
+
         if (!categoryId) {
-            return res.status(400).json({ message: "Category is required" });
+            return res.status(400).json({ message: "Category ID is required" });
         }
+
+        if (!files || !files.image || !files.image[0].buffer) {
+            return res.status(400).json({ message: "Image file is required" });
+        }
+
         const categoryExists = await Category.findById(categoryId);
         if (!categoryExists) {
             return res.status(404).json({ message: "Category not found" });
         }
-        const subcategoryExists = await Subcategory.findOne({
-            name,
-            category:categoryId,
-        });
+
+        const subcategoryExists = await Subcategory.findOne({ name, category: categoryId });
         if (subcategoryExists) {
-            return res.status(400).json({ message: "Subcategory already exists" });
+            return res.status(400).json({ message: "Subcategory already exists under this category" });
         }
-        const subcategory = await Subcategory.create({
+
+        const imageUrl = await uploadFile(files.image[0].buffer);
+
+        const newSubcategory = new Subcategory({
             name,
+            image: imageUrl,
             category: categoryId,
         });
+
+        const savedSubcategory = await newSubcategory.save();
+
         res.status(201).json({
             status: 201,
             message: "Subcategory created successfully",
-            data: subcategory
+            data: savedSubcategory,
         });
     } catch (error) {
         console.error("Error creating subcategory:", error.message);
@@ -147,19 +161,26 @@ const handleEditSubcategory = asyncHandler(async (req, res) => {
     try {
         const { subcategoryId } = req.params;
         const { name } = req.body;
-
+        const files = req.files;
         if (!name || name.trim() === "") {
-            return res.status(400).json({ message: "New subcategory name is required" });
+            return res.status(400).json({ message: "Subcategory name is required" });
         }
-
         const subcategory = await Subcategory.findById(subcategoryId);
-
         if (!subcategory) {
             return res.status(404).json({ message: "Subcategory not found" });
         }
 
-        subcategory.name = name;
-        const updatedSubcategory = await subcategory.save();
+        const updateData = { name };
+
+        if (files && files.image && files.image[0].buffer) {
+            updateData.image = await uploadFiles(files.image[0].buffer);
+        }
+
+        const updatedSubcategory = await Subcategory.findByIdAndUpdate(
+            subcategoryId,
+            updateData,
+            { new: true, runValidators: true }
+        );
 
         res.status(200).json({
             status: 200,
@@ -175,6 +196,7 @@ const handleEditSubcategory = asyncHandler(async (req, res) => {
         });
     }
 });
+
 
 const handleDeleteSubcategory = asyncHandler(async (req, res) => {
     try {

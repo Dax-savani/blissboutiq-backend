@@ -6,7 +6,7 @@ const {uploadFiles} = require("../helpers/productImage");
 
 const handleGetCategories = asyncHandler(async (req, res) => {
     try {
-        const categories = await Category.find({}).sort({ createdAt: -1 });
+        const categories = await Category.find({}).sort({createdAt: -1});
         res.status(200).json({
             status: 200,
             message: "Categories fetched successfully",
@@ -52,20 +52,20 @@ const handleGetSingleCategory = asyncHandler(async (req, res) => {
 
 const handleCreateCategory = asyncHandler(async (req, res) => {
     try {
-        const { name } = req.body;
+        const {name} = req.body;
         const file = req.file; // Single file
 
         if (!file) {
-            return res.status(400).json({ message: "Category image is required" });
+            return res.status(400).json({message: "Category image is required"});
         }
 
         if (!name || name.trim() === "") {
-            return res.status(400).json({ message: "Category name is required" });
+            return res.status(400).json({message: "Category name is required"});
         }
 
-        const categoryExists = await Category.findOne({ name });
+        const categoryExists = await Category.findOne({name});
         if (categoryExists) {
-            return res.status(400).json({ message: "Category name already exists" });
+            return res.status(400).json({message: "Category name already exists"});
         }
 
         const imageUrl = await uploadFiles([file.buffer]); // Upload single image
@@ -93,18 +93,18 @@ const handleCreateCategory = asyncHandler(async (req, res) => {
 
 const handleEditCategory = asyncHandler(async (req, res) => {
     try {
-        const { categoryId } = req.params;
-        const { name } = req.body;
+        const {categoryId} = req.params;
+        const {name} = req.body;
         const file = req.file; // Single file
 
         const category = await Category.findById(categoryId);
 
         if (!category) {
-            return res.status(404).json({ message: "Category not found" });
+            return res.status(404).json({message: "Category not found"});
         }
 
         if (name && name.trim() === "") {
-            return res.status(400).json({ message: "Invalid category name" });
+            return res.status(400).json({message: "Invalid category name"});
         }
 
         let imageUrl = category.image;
@@ -168,16 +168,16 @@ const handleGetCategoriesByGender = asyncHandler(async (req, res) => {
         const categoriesByGender = await Promise.all(
             genders.map(async (gender) => {
                 // Fetch products for the specific gender and populate the category
-                const products = await Product.find({ gender }).populate("category");
+                const products = await Product.find({gender}).populate("category");
 
                 // Group categories and their subcategories
                 const categoryMap = new Map();
 
                 for (const product of products) {
-                    const { category } = product;
+                    const {category} = product;
 
                     if (category) {
-                        const subcategories = await Subcategory.find({ category: category._id });
+                        const subcategories = await Subcategory.find({category: category._id});
 
                         if (!categoryMap.has(category._id)) {
                             categoryMap.set(category._id, {
