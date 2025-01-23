@@ -107,7 +107,7 @@ const handleAddSubcategory = asyncHandler(async (req, res) => {
     try {
         const { categoryId } = req.params;
         const { name } = req.body;
-        const files = req.files;
+        const files = req.file;
 
         if (!name || name.trim() === "") {
             return res.status(400).json({ message: "Subcategory name is required" });
@@ -116,7 +116,6 @@ const handleAddSubcategory = asyncHandler(async (req, res) => {
         if (!categoryId) {
             return res.status(400).json({ message: "Category ID is required" });
         }
-
         if (!files) {
             return res.status(400).json({ message: "Image file is required" });
         }
@@ -131,11 +130,11 @@ const handleAddSubcategory = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: "Subcategory already exists under this category" });
         }
 
-        const imageUrl = await uploadFiles(files.image[0].buffer);
+        const imageUrl = await uploadFiles([files.buffer]);
 
         const newSubcategory = new Subcategory({
             name,
-            image: imageUrl,
+            image: imageUrl[0],
             category: categoryId,
         });
 
