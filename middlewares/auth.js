@@ -7,8 +7,8 @@ async function auth(req, res, next) {
 
     if (!authToken) return res.status(401).json({message: "UnAuthorised: Auth token not found!", status: 401});
 
-    if (authToken.includes('Bearer')) {
-        authToken = authToken.split(' ')[1];
+    if (authToken.toLowerCase().startsWith("bearer ")) {
+        authToken = authToken.split(" ")[1];
     }
 
     const user = await verifyToken(authToken);
