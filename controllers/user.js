@@ -17,6 +17,46 @@ const handleCreateUser = asyncHandler(async (req, res) => {
     return res.status(201).json({data: newUser, message: "Register successfully", status: 201});
 });
 
+const handleEditAddress = asyncHandler(async (req, res) => {
+    const userId = req.user?._id;
+
+
+    const { address_1, address_2, country, state, city, zipcode } = req.body;
+
+    if (!address_1 && !address_2 && !country && !state && !city && !zipcode) {
+        res.status(400);
+        throw new Error("At least one address field must be provided");
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        {
+            $set: {
+                "address_details.address_1": address_1,
+                "address_details.address_2": address_2,
+                "address_details.country": country,
+                "address_details.state": state,
+                "address_details.city": city,
+                "address_details.zipcode": zipcode,
+            },
+        },
+        { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+        res.status(404);
+        throw new Error("User not found");
+    }
+
+    res.status(200).json({
+        data: {
+            address_details: updatedUser.address_details,
+        },
+        message: "Address details updated successfully",
+        status: 200,
+    });
+});
+
 const handleLoginCtrl = asyncHandler(async (req, res) => {
     const {email, password} = req.body;
 
@@ -77,4 +117,4 @@ const handleGetMe = asyncHandler(async (req, res) => {
     });
 });
 
-module.exports = {handleCreateUser, handleLoginCtrl , handleGetMe};
+module.exports = {handleCreateUser, handleLoginCtrl , handleGetMe , handleEditAddress};
