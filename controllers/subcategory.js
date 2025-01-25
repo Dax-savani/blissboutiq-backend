@@ -51,7 +51,7 @@ const handleGetSubcategoriesGroupedByCategory = asyncHandler(async (req, res) =>
                         $push: {
                             _id: "$_id",
                             name: "$name",
-                            image: "$subcategoryImage",
+                            image: "$image",
                         },
                     },
                 },
