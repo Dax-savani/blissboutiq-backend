@@ -46,10 +46,12 @@ const handleGetSubcategoriesGroupedByCategory = asyncHandler(async (req, res) =>
                 $group: {
                     _id: "$categoryDetails._id",
                     categoryName: { $first: "$categoryDetails.name" },
+                    categoryImage: { $first: "$categoryDetails.image" },
                     subcategories: {
                         $push: {
                             _id: "$_id",
                             name: "$name",
+                            image: "$subcategoryImage",
                         },
                     },
                 },
@@ -58,6 +60,7 @@ const handleGetSubcategoriesGroupedByCategory = asyncHandler(async (req, res) =>
                 $project: {
                     _id: 1,
                     categoryName: 1,
+                    categoryImage: 1,
                     subcategories: 1,
                 },
             },
@@ -77,6 +80,7 @@ const handleGetSubcategoriesGroupedByCategory = asyncHandler(async (req, res) =>
         });
     }
 });
+
 
 const handleGetSingleSubcategory = asyncHandler(async (req, res) => {
     try {
