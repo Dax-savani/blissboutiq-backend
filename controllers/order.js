@@ -59,9 +59,9 @@ const handleAddOrder = asyncHandler(async (req, res) => {
     }
 
     try {
-        // Reduce stock before placing the order
+
         selectedSize.stock -= qty;
-        await findedProduct.save(); // Save the product with updated stock
+        await findedProduct.save();
 
         const newOrder = await Order.create({
             user_id: req.user._id,
@@ -92,7 +92,7 @@ const handleEditOrder = asyncHandler(async (req, res) => {
         const order = await Order.findOne({ _id: orderId, user_id: req.user._id });
         if (!order) return res.status(404).json({ status: 404, message: "Order not found" });
 
-        // If the order is canceled, restore stock
+
         if (status === 'cancelled' && order.status !== 'cancelled') {
             const product = await Product.findById(order.product_id);
             if (product) {
