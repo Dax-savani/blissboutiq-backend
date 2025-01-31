@@ -9,6 +9,7 @@ const orderSchema = new Schema({
     },
     product_id: {
         type: String,
+        ref: 'Product',
         required: true,
     },
     color_id: {
