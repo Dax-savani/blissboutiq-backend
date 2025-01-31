@@ -11,6 +11,14 @@ const orderSchema = new Schema({
         type: String,
         required: true,
     },
+    color_id: {
+        type: String,
+        required: true,
+    },
+    size: {
+        type: String,
+        required: true,
+    },
     qty: {
         type: Number,
         default: 1,
