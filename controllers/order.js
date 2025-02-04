@@ -34,6 +34,7 @@ const handleCreateRazorpayOrder = asyncHandler(async (req, res) => {
             currency: "INR",
             receipt: `order_${Date.now()}`,
         };
+
         const razorpayOrder = await razorpay.orders.create(options);
         if (!razorpayOrder) {
             return res.status(400).json({ message: "Failed to create Razorpay order" });
@@ -44,7 +45,7 @@ const handleCreateRazorpayOrder = asyncHandler(async (req, res) => {
             razorpayOrder,
         });
     } catch (err) {
-        res.status(500).json({ message: "Error creating Razorpay order", error: err.message });
+        res.status(500).json({ message: "Error creating Razorpay order", error: err });
     }
 });
 
@@ -74,7 +75,7 @@ const handleValidateAndPlaceOrder = asyncHandler(async (req, res) => {
             orderDetails: createdOrders,
         });
     } catch (err) {
-        res.status(500).json({ message: "Error placing order", error: err.message });
+        res.status(500).json({ message: "Error placing order", error: err });
     }
 });
 
