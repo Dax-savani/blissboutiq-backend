@@ -34,7 +34,6 @@ const handleCreateRazorpayOrder = asyncHandler(async (req, res) => {
             currency: "INR",
             receipt: `order_${Date.now()}`,
         };
-        console.log(options);
         const razorpayOrder = await razorpay.orders.create(options);
         if (!razorpayOrder) {
             return res.status(400).json({ message: "Failed to create Razorpay order" });
