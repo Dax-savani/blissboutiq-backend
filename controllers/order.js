@@ -41,7 +41,7 @@ const handleCreateRazorpayOrder = asyncHandler(async (req, res) => {
         }
 
         const options = {
-            amount: totalAmount * 100, // Convert to paise
+            amount: totalAmount * 100,
             currency: "INR",
             receipt: `order_${Date.now()}`,
         };
@@ -75,7 +75,7 @@ const handleValidateAndPlaceOrder = asyncHandler(async (req, res) => {
             user_id: req.user._id,
             product_id: order.product_id,
             qty: order.qty,
-            status: "paid",
+            status: "placed",
             razorpay_order_id,
             razorpay_payment_id,
         }));
