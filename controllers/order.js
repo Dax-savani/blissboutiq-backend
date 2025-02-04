@@ -24,28 +24,17 @@ const handleGetOrder = asyncHandler(async (req, res) => {
 });
 
 const handleCreateRazorpayOrder = asyncHandler(async (req, res) => {
-    const {orders}  = req.body;
+    const {orders, totalAmount}  = req.body;
     if (!Array.isArray(orders) || orders.length === 0) {
         return res.status(400).json({ message: "Orders must be a non-empty array" });
     }
-
     try {
-        let totalAmount = 0;
-        for (const order of orders) {
-            const { product_id, qty } = order;
-            const product = await Product.findById(product_id);
-            if (!product) {
-                return res.status(404).json({ message: "Product not found", product_id });
-            }
-            totalAmount += product.price * qty;
-        }
-
         const options = {
             amount: totalAmount * 100,
             currency: "INR",
             receipt: `order_${Date.now()}`,
         };
-
+        console.log(options);
         const razorpayOrder = await razorpay.orders.create(options);
         if (!razorpayOrder) {
             return res.status(400).json({ message: "Failed to create Razorpay order" });
