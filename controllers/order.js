@@ -62,7 +62,7 @@ const handleValidateAndPlaceOrder = asyncHandler(async (req, res) => {
     try {
         const newOrders = orders.map(order => ({
             user_id: req.user._id,
-            product_id: order.product_id,
+            product_id: order.product_id._id,
             qty: order.qty,
             status: "placed",
             razorpay_order_id,
