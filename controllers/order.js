@@ -40,10 +40,7 @@ const handleCreateRazorpayOrder = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: "Failed to create Razorpay order" });
         }
 
-        res.status(201).json({
-            message: "Razorpay order created successfully",
-            razorpayOrder,
-        });
+        res.status(201).json(razorpayOrder);
     } catch (err) {
         res.status(500).json({ message: "Error creating Razorpay order", error: err });
     }
