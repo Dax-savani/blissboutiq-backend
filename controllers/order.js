@@ -18,7 +18,7 @@ const handleGetOrder = asyncHandler(async (req, res) => {
                 path: 'subcategory',
                 populate: {path: 'category'}
             }
-        });
+        }).populate('user_id');
 
     return res.json(orderProducts);
 });
@@ -30,7 +30,7 @@ const handleGetSingleOrder = asyncHandler(async (req, res) => {
                 path: 'subcategory',
                 populate: {path: 'category'}
             }
-        });
+        }).populate('user_id');
 
     return res.json(orderProduct);
 });
