@@ -170,4 +170,4 @@ const handleValidateAndPlaceOrder = asyncHandler(async (req, res) => {
 // });
 
 
-module.exports = { handleGetOrder, handleGetSingleOrder , handleValidateAndPlaceOrder , handleCreateRazorpayOrder};
+module.exports = { handleGetOrder , handleValidateAndPlaceOrder , handleCreateRazorpayOrder};
