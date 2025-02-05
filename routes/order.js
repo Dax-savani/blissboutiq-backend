@@ -1,11 +1,11 @@
 const router = require('express').Router();
-const {handleCreateRazorpayOrder,handleGetSingleOrder,handleValidateAndPlaceOrder,handleGetOrder} = require('../controllers/order')
+const {handleCreateRazorpayOrder,handleUpdateOrderStatus,handleGetSingleOrder,handleValidateAndPlaceOrder,handleGetOrder} = require('../controllers/order')
 
 router.get('/',handleGetOrder);
 
 router.get('/:orderId',handleGetSingleOrder);
 
-// router.post('/',handleAddOrder);
+router.put('/:orderId', handleUpdateOrderStatus);
 
 router.post('/razorpay-order', handleCreateRazorpayOrder);
 

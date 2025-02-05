@@ -34,6 +34,33 @@ const handleGetSingleOrder = asyncHandler(async (req, res) => {
 
     return res.json(orderProduct);
 });
+const handleUpdateOrderStatus = asyncHandler(async (req, res) => {
+    const { orderId } = req.params;
+    const { status } = req.body;
+
+    if (!["placed", "confirmed", "shipped", "delivered", "cancelled"].includes(status)) {
+        return res.status(400).json({ message: "Invalid order status" });
+    }
+
+    try {
+        const updatedOrder = await Order.findByIdAndUpdate(
+            orderId,
+            { status },
+            { new: true }
+        ).populate({
+            path: 'product_id',
+            populate: { path: 'subcategory', populate: { path: 'category' } }
+        }).populate('user_id');
+
+        if (!updatedOrder) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        res.json({ message: "Order status updated successfully", order: updatedOrder });
+    } catch (error) {
+        res.status(500).json({ message: "Error updating order status", error: error.message });
+    }
+});
 
 const handleCreateRazorpayOrder = asyncHandler(async (req, res) => {
     const {orders, totalAmount} = req.body;
@@ -79,28 +106,22 @@ const handleValidateAndPlaceOrder = asyncHandler(async (req, res) => {
                 return res.status(404).json({message: "Product not found", product_id});
             }
 
-            // Find selected color
             const selectedColor = product.color_options.find(option => option._id.toString() === color_id);
             if (!selectedColor) {
                 return res.status(400).json({message: "Invalid color selected", product_id});
             }
 
-            // Find selected size within the selected color
             const selectedSize = selectedColor.size_options.find(option => option.size === size);
             if (!selectedSize) {
                 return res.status(400).json({message: "Invalid size selected", product_id});
             }
 
-            // Check stock availability
             if (selectedSize.stock < qty) {
                 return res.status(400).json({message: "Insufficient stock", product_id});
             }
-
-            // Deduct stock
             selectedSize.stock -= qty;
             await product.save();
 
-            // Add order to newOrders array
             newOrders.push({
                 user_id: req.user._id,
                 color: selectedColor,
@@ -126,58 +147,5 @@ const handleValidateAndPlaceOrder = asyncHandler(async (req, res) => {
 });
 
 
-// const handleAddOrder = asyncHandler(async (req, res) => {
-//     const orders = req.body;
-//
-//     if (!Array.isArray(orders) || orders.length === 0) {
-//         return res.status(400).json({status: 400, message: "Orders must be a non-empty array"});
-//     }
-//
-//     try {
-//         const newOrders = [];
-//
-//         for (const order of orders) {
-//             const {product_id, qty, color_id, size, status} = order;
-//
-//             const findedProduct = await Product.findById(product_id);
-//             if (!findedProduct) {
-//                 return res.status(404).json({status: 404, message: "Product not found", product_id});
-//             }
-//
-//             const selectedColor = findedProduct.color_options.find(option => option._id.equals(color_id));
-//             if (!selectedColor) {
-//                 return res.status(400).json({status: 400, message: "Invalid color selected", product_id});
-//             }
-//
-//             const selectedSize = selectedColor.size_options.find(option => option.size === size);
-//             if (!selectedSize) {
-//                 return res.status(400).json({status: 400, message: "Invalid size selected", product_id});
-//             }
-//
-//             if (selectedSize.stock < qty) {
-//                 return res.status(400).json({status: 400, message: "Insufficient stock", product_id});
-//             }
-//
-//             selectedSize.stock -= qty;
-//             await findedProduct.save();
-//
-//             newOrders.push({
-//                 user_id: req.user._id,
-//                 product_id,
-//                 color_id,
-//                 size,
-//                 qty,
-//                 status
-//             });
-//         }
-//
-//         const createdOrders = await Order.insertMany(newOrders);
-//
-//         return res.status(201).json({status: 201, message: "Orders placed successfully", data: createdOrders});
-//     } catch (err) {
-//         return res.status(500).json({status: 500, message: "Failed to place orders", error: err.message});
-//     }
-// });
 
-
-module.exports = {handleGetOrder, handleValidateAndPlaceOrder, handleCreateRazorpayOrder, handleGetSingleOrder};
+module.exports = {handleGetOrder, handleValidateAndPlaceOrder, handleCreateRazorpayOrder, handleGetSingleOrder , handleUpdateOrderStatus};
