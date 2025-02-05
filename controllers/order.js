@@ -60,43 +60,63 @@ const handleValidateAndPlaceOrder = asyncHandler(async (req, res) => {
     }
 
     try {
-        const newOrders = orders.map(order => ({
-            user_id: req.user._id,
-            product_id: order.product_id._id,
-            qty: order.qty,
-            status: "placed",
-            razorpay_order_id,
-            razorpay_payment_id,
-        }));
+        const newOrders = [];
+
+        for (const order of orders) {
+            const { product_id, qty, color_id, size } = order;
+
+            const product = await Product.findById(product_id);
+            if (!product) {
+                return res.status(404).json({ message: "Product not found", product_id });
+            }
+
+            // Find selected color
+            const selectedColor = product.color_options.find(option => option._id.toString() === color_id);
+            if (!selectedColor) {
+                return res.status(400).json({ message: "Invalid color selected", product_id });
+            }
+
+            // Find selected size within the selected color
+            const selectedSize = selectedColor.size_options.find(option => option.size === size);
+            if (!selectedSize) {
+                return res.status(400).json({ message: "Invalid size selected", product_id });
+            }
+
+            // Check stock availability
+            if (selectedSize.stock < qty) {
+                return res.status(400).json({ message: "Insufficient stock", product_id });
+            }
+
+            // Deduct stock
+            selectedSize.stock -= qty;
+            await product.save();
+
+            // Add order to newOrders array
+            newOrders.push({
+                user_id: req.user._id,
+                color: selectedColor,
+                product_id,
+                size,
+                qty,
+                status: "placed",
+                razorpay_order_id,
+                razorpay_payment_id,
+                price: selectedColor.price.discounted_price,
+            });
+        }
 
         const createdOrders = await Order.insertMany(newOrders);
+
         res.status(201).json({
             message: "Transaction is legit! Order placed successfully.",
             orderDetails: createdOrders,
         });
     } catch (err) {
-        res.status(500).json({ message: "Error placing order", error: err });
+        res.status(500).json({ message: "Error placing order", error: err.message });
     }
 });
 
-const handleGetSingleOrder = asyncHandler(async (req, res) => {
-    const {orderId} = req.params;
 
-    const orderProduct = await Order.findOne({_id: orderId, user_id: req.user._id})
-        .populate({
-            path: 'product_id',
-            populate: {
-                path: 'subcategory',
-                populate: {path: 'category'}
-            }
-        });
-
-    if (!orderProduct) {
-        return res.status(404).json({status: 404, message: "Order not found"});
-    }
-
-    return res.json(orderProduct);
-});
 
 
 // const handleAddOrder = asyncHandler(async (req, res) => {

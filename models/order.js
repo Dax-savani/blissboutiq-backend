@@ -12,12 +12,16 @@ const orderSchema = new Schema({
         ref: 'Product',
         required: true,
     },
-    color_id: {
-        type: String,
+    color: {
+        type: Object,
         required: true,
     },
     size: {
         type: String,
+        required: true,
+    },
+    price: {
+        type: Number,
         required: true,
     },
     qty: {
@@ -29,6 +33,14 @@ const orderSchema = new Schema({
         type: String,
         enum: ['placed', 'confirmed', 'shipped', 'delivered', 'cancelled'],
         default: 'placed',
+        required: true
+    },
+    razorpay_order_id: {
+        type: String,
+        required: true
+    },
+    razorpay_payment_id: {
+        type: String,
         required: true
     }
 })
