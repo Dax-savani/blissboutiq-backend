@@ -12,6 +12,7 @@ async function auth(req, res, next) {
     }
 
     const user = await verifyToken(authToken);
+    if (!user) return res.status(401).json({ message: "Unauthorized: Invalid token!", status: 401 });
 
     const verifiedUser = await User.findById(user.id);
 
