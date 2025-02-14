@@ -2,83 +2,61 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
 const addressSchema = new mongoose.Schema({
-  address_1: {
-    type: String,
-  },
-  address_2: {
-    type: String,
-  },
-  country: {
-    type: String,
-  },
-  state: {
-    type: String,
-  },
-  city: {
-    type: String,
-  },
+  address_1: { type: String, trim: true },
+  address_2: { type: String, trim: true },
+  country: { type: String, trim: true },
+  state: { type: String, trim: true },
+  city: { type: String, trim: true },
   zipcode: {
     type: String,
-    match: [/^\d{6}$/, "Please use a valid 6-digit zipcode"]
+    trim: true,
+    match: [/^\d{6}$/, "Please use a valid 6-digit zipcode"],
   },
 });
 
-// Declare the Schema of the Mongo model
 
 const userSchema = new mongoose.Schema({
-  first_name: {
-    type: String,
-    required: true,
-  },
-  last_name: {
-    type: String,
-    required: true,
-  },
-  dob: {
-    type: Date,
-    required: true,
-  },
+  first_name: { type: String, required: true, trim: true },
+  last_name: { type: String, required: true, trim: true },
+  dob: { type: Date, required: true },
   phone_number: {
     type: String,
     required: true,
     unique: true,
+    trim: true,
     match: [/^\d{10}$/, "Phone number must be 10 digits"],
   },
   gender: {
     type: String,
     required: true,
-    enum: ['Male', 'Female','Other'],
-    validate: {
-      validator: function(v) {
-        return ['Male', 'Female','Other'].includes(v);
-      },
-      message: '{VALUE} is not a valid gender'
-    }
+    enum: ["Male", "Female", "Other"],
   },
   email: {
     type: String,
     required: true,
     unique: true,
+    trim: true,
     match: [/\S+@\S+\.\S+/, "Please use a valid email address"],
   },
-  password: {
+  password: { type: String, required: true },
+  role: {
     type: String,
-    required: true,
+    enum: ["customer", "admin"],
+    default: "customer",
   },
-  address_details: {
-    type: addressSchema,
-  }
+  address_details: { type: addressSchema, default: {} },
 });
 
 userSchema.pre("save", async function (next) {
-  if (this.isModified("password") || this.isNew) {
+  if (this.isModified("password")) {
     this.password = await bcrypt.hash(this.password, 10);
   }
+  next();
 });
 
-userSchema.methods.isPasswordMatched = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword,this.password)
-}
 
-//Export the model
+userSchema.methods.isPasswordMatched = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
+
 module.exports = mongoose.model("User", userSchema);

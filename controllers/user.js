@@ -3,16 +3,16 @@ const {generateToken} = require("../auth/jwt");
 const asyncHandler = require("express-async-handler");
 
 const handleCreateUser = asyncHandler(async (req, res) => {
-    const {email, phone_number} = req.body;
+    const {email, phone_number, role} = req.body;
 
     const userExist = await User.exists({
         $or: [{email: email}, {phone_number: phone_number}]
     })
 
     if (userExist) throw new Error("User already exist")
+    const userRole = role && ["customer", "admin"].includes(role) ? role : "customer";
 
-
-    const newUser = await User.create(req.body);
+    const newUser = await User.create({...req.body, role: userRole});
 
     return res.status(201).json({data: newUser, message: "Register successfully", status: 201});
 });
@@ -21,7 +21,7 @@ const handleEditAddress = asyncHandler(async (req, res) => {
     const userId = req.user?._id;
 
 
-    const { address_1, address_2, country, state, city, zipcode } = req.body;
+    const {address_1, address_2, country, state, city, zipcode} = req.body;
 
     if (!address_1 && !address_2 && !country && !state && !city && !zipcode) {
         res.status(400);
@@ -40,7 +40,7 @@ const handleEditAddress = asyncHandler(async (req, res) => {
                 "address_details.zipcode": zipcode,
             },
         },
-        { new: true, runValidators: true }
+        {new: true, runValidators: true}
     );
 
     if (!updatedUser) {
@@ -117,4 +117,4 @@ const handleGetMe = asyncHandler(async (req, res) => {
     });
 });
 
-module.exports = {handleCreateUser, handleLoginCtrl , handleGetMe , handleEditAddress};
+module.exports = {handleCreateUser, handleLoginCtrl, handleGetMe, handleEditAddress};
