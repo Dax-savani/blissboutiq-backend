@@ -5,7 +5,6 @@ const sizeSchema = new Schema({
     size: {
         type: String,
         required: true,
-        enum: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'],
     },
     stock: {
         type: Number,
