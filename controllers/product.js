@@ -9,7 +9,7 @@ const { uploadFiles } = require('../helpers/productImage');
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 const handleGetProduct = asyncHandler(async (req, res) => {
-    const { categoryId, gender, subcategoryId, size, color } = req.query;
+    const { categoryId, gender, subcategoryId, size, color, sort } = req.query;
     const filter = {};
 
     if (categoryId) {
@@ -35,17 +35,29 @@ const handleGetProduct = asyncHandler(async (req, res) => {
     }
 
     try {
-        const products = await Product.find(filter)
-            .sort({ createdAt: -1 })
+        let products = await Product.find(filter)
             .populate('category', 'name image');
 
+        // Fetch cart items
         const cartProducts = await Cart.find({});
         const cartProductIds = new Set(cartProducts.map(item => item.product_id.toString()));
 
-        const productsWithCartStatus = products.map(product => ({
+        // Add cart status to products
+        let productsWithCartStatus = products.map(product => ({
             ...product.toObject(),
             isCart: cartProductIds.has(product._id.toString()),
         }));
+
+        if (sort === "price-low-high" || sort === "price-high-low") {
+            productsWithCartStatus.sort((a, b) => {
+                const priceA = a.color_options?.[0]?.price?.discounted_price ? parseInt(a.color_options[0].price.discounted_price) : 0;
+                const priceB = b.color_options?.[0]?.price?.discounted_price ? parseInt(b.color_options[0].price.discounted_price) : 0;
+
+                return sort === "price-low-high" ? priceA - priceB : priceB - priceA;
+            });
+        } else if (sort === "newest") {
+            productsWithCartStatus.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        }
 
         return res.json({ status: 200, message: "Products fetched successfully", data: productsWithCartStatus });
     } catch (error) {
@@ -53,6 +65,8 @@ const handleGetProduct = asyncHandler(async (req, res) => {
         res.status(500).json({ status: 500, message: "Failed to fetch products" });
     }
 });
+
+
 
 const handleGetSingleProduct = asyncHandler(async (req, res) => {
     const { productId } = req.params;
