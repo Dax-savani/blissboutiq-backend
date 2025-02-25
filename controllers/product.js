@@ -9,7 +9,7 @@ const { uploadFiles } = require('../helpers/productImage');
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 const handleGetProduct = asyncHandler(async (req, res) => {
-    const { categoryId, gender, subcategoryId } = req.query;
+    const { categoryId, gender, subcategoryId, size, color } = req.query;
     const filter = {};
 
     if (categoryId) {
@@ -26,6 +26,12 @@ const handleGetProduct = asyncHandler(async (req, res) => {
     }
     if (gender) {
         filter.gender = gender;
+    }
+    if (size) {
+        filter["color_options.size_options.size"] = size;
+    }
+    if (color) {
+        filter["color_options.color"] = color;
     }
 
     try {
