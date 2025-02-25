@@ -1,6 +1,7 @@
 const Product = require('../models/product');
 const Cart = require('../models/cart');
 const Wishlist = require('../models/wishlist');
+const Category = require("../models/category");
 const mongoose = require('mongoose');
 const asyncHandler = require("express-async-handler");
 const { uploadFiles } = require('../helpers/productImage');
@@ -84,7 +85,7 @@ const handleCreateProduct = asyncHandler(async (req, res) => {
                 .filter(file => file.fieldname === `product_images[${index}]`)
                 .map(file => file.buffer);
 
-            const uploadedImages = await uploadFiles(productImages);  // Assuming uploadFiles returns a promise
+            const uploadedImages = await uploadFiles(productImages);
 
             return {
                 ...colorOption,
@@ -198,10 +199,45 @@ const handleDeleteProduct = asyncHandler(async (req, res) => {
     }
 });
 
+const handleGetProductAttributes = asyncHandler(async (req, res) => {
+    try {
+
+        const sizes = await Product.aggregate([
+            { $unwind: "$color_options" },
+            { $unwind: "$color_options.size_options" },
+            { $group: { _id: "$color_options.size_options.size" } }
+        ]).then(result => result.map(item => item._id));
+
+
+        const categories = await Product.distinct("category");
+        const populatedCategories = await Category.find({ _id: { $in: categories } }).select("name image");
+
+
+        const colors = await Product.aggregate([
+            { $unwind: "$color_options" },
+            { $group: { _id: { color: "$color_options.color", hex: "$color_options.hex" } } }
+        ]).then(result => result.map(item => item._id));
+
+        return res.json({
+            status: 200,
+            message: "Product attributes fetched successfully",
+            data: {
+                sizes: sizes.filter(size => size),
+                categories: populatedCategories,
+                colors: colors
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching product attributes:", error.message);
+        res.status(500).json({ status: 500, message: "Failed to fetch product attributes" });
+    }
+});
+
 module.exports = {
     handleGetProduct,
     handleGetSingleProduct,
     handleCreateProduct,
     handleEditProduct,
     handleDeleteProduct,
+    handleGetProductAttributes
 };
