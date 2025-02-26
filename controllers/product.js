@@ -13,10 +13,11 @@ const handleGetProduct = asyncHandler(async (req, res) => {
     const filter = {};
 
     if (categoryId) {
-        if (!isValidObjectId(categoryId)) {
-            return res.status(400).json({ status: 400, message: "Invalid category ID" });
+        const categoryIds = categoryId.split(',').filter(id => isValidObjectId(id));
+        if (categoryIds.length === 0) {
+            return res.status(400).json({ status: 400, message: "Invalid category ID(s)" });
         }
-        filter.category = categoryId;
+        filter.category = { $in: categoryIds };
     }
     if (subcategoryId) {
         if (!isValidObjectId(subcategoryId)) {
@@ -35,8 +36,7 @@ const handleGetProduct = asyncHandler(async (req, res) => {
     }
 
     try {
-        let products = await Product.find(filter)
-            .populate('category', 'name image');
+        let products = await Product.find(filter).populate('category', 'name image');
 
         // Fetch cart items
         const cartProducts = await Cart.find({});
@@ -52,7 +52,6 @@ const handleGetProduct = asyncHandler(async (req, res) => {
             productsWithCartStatus.sort((a, b) => {
                 const priceA = a.color_options?.[0]?.price?.discounted_price ? parseInt(a.color_options[0].price.discounted_price) : 0;
                 const priceB = b.color_options?.[0]?.price?.discounted_price ? parseInt(b.color_options[0].price.discounted_price) : 0;
-
                 return sort === "price-low-high" ? priceA - priceB : priceB - priceA;
             });
         } else if (sort === "newest") {
@@ -65,6 +64,7 @@ const handleGetProduct = asyncHandler(async (req, res) => {
         res.status(500).json({ status: 500, message: "Failed to fetch products" });
     }
 });
+
 
 
 
