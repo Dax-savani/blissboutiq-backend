@@ -19,20 +19,26 @@ const handleGetProduct = asyncHandler(async (req, res) => {
         }
         filter.category = { $in: categoryIds };
     }
+
     if (subcategoryId) {
         if (!isValidObjectId(subcategoryId)) {
             return res.status(400).json({ status: 400, message: "Invalid subcategory ID" });
         }
         filter.subcategory = subcategoryId;
     }
+
     if (gender) {
         filter.gender = gender;
     }
+
     if (size) {
-        filter["color_options.size_options.size"] = size;
+        const sizes = size.split(',');
+        filter["color_options.size_options.size"] = { $in: sizes };
     }
+
     if (color) {
-        filter["color_options.color"] = color;
+        const colors = color.split(',');
+        filter["color_options.color"] = { $in: colors };
     }
 
     try {
@@ -48,8 +54,10 @@ const handleGetProduct = asyncHandler(async (req, res) => {
 
         if (sort === "price-low-high" || sort === "price-high-low") {
             productsWithCartStatus.sort((a, b) => {
-                const priceA = a.color_options?.[0]?.price?.discounted_price ? parseInt(a.color_options[0].price.discounted_price) : 0;
-                const priceB = b.color_options?.[0]?.price?.discounted_price ? parseInt(b.color_options[0].price.discounted_price) : 0;
+                const priceA = a.color_options?.[0]?.price?.discounted_price
+                    ? parseInt(a.color_options[0].price.discounted_price) : 0;
+                const priceB = b.color_options?.[0]?.price?.discounted_price
+                    ? parseInt(b.color_options[0].price.discounted_price) : 0;
                 return sort === "price-low-high" ? priceA - priceB : priceB - priceA;
             });
         } else if (sort === "newest") {
@@ -62,8 +70,6 @@ const handleGetProduct = asyncHandler(async (req, res) => {
         res.status(500).json({ status: 500, message: "Failed to fetch products" });
     }
 });
-
-
 
 
 const handleGetSingleProduct = asyncHandler(async (req, res) => {
