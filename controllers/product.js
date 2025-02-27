@@ -38,11 +38,9 @@ const handleGetProduct = asyncHandler(async (req, res) => {
     try {
         let products = await Product.find(filter).populate('category', 'name image');
 
-        // Fetch cart items
         const cartProducts = await Cart.find({});
         const cartProductIds = new Set(cartProducts.map(item => item.product_id.toString()));
 
-        // Add cart status to products
         let productsWithCartStatus = products.map(product => ({
             ...product.toObject(),
             isCart: cartProductIds.has(product._id.toString()),
@@ -221,22 +219,25 @@ const handleDeleteProduct = asyncHandler(async (req, res) => {
 
 const handleGetProductAttributes = asyncHandler(async (req, res) => {
     try {
-
         const sizes = await Product.aggregate([
             { $unwind: "$color_options" },
             { $unwind: "$color_options.size_options" },
             { $group: { _id: "$color_options.size_options.size" } }
         ]).then(result => result.map(item => item._id));
 
-
         const categories = await Product.distinct("category");
         const populatedCategories = await Category.find({ _id: { $in: categories } }).select("name image");
 
-
         const colors = await Product.aggregate([
             { $unwind: "$color_options" },
-            { $group: { _id: { color: "$color_options.color", hex: "$color_options.hex" } } }
-        ]).then(result => result.map(item => item._id));
+            {
+                $group: {
+                    _id: "$color_options.color",
+                    hex: { $first: "$color_options.hex" }
+                }
+            },
+            { $project: { _id: 0, color: "$_id", hex: 1 } }
+        ]);
 
         return res.json({
             status: 200,
