@@ -11,17 +11,25 @@ const razorpay = new Razorpay({
 });
 
 const handleGetOrder = asyncHandler(async (req, res) => {
-    const orderProducts = await Order.find({user_id: req.user._id})
+    let query = {};
+    if (req.user.role !== 'admin') {
+        query.user_id = req.user._id;
+    }
+
+    const orderProducts = await Order.find(query)
         .populate({
             path: 'product_id',
             populate: {
                 path: 'subcategory',
-                populate: {path: 'category'}
+                populate: { path: 'category' }
             }
-        }).populate('user_id');
+        })
+        .populate('user_id');
 
     return res.json(orderProducts);
 });
+
+
 const handleGetSingleOrder = asyncHandler(async (req, res) => {
     const orderProduct = await Order.findById({user_id: req.user._id, _id: req.params.orderId})
         .populate({
