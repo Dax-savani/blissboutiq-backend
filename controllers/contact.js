@@ -1,7 +1,7 @@
 const asyncHandler = require('express-async-handler');
-const Contact = require('../models/contactModel'); // Reference the Contact model
+const Contact = require('../models/contact');
 
-// Get all contacts
+
 const handleGetContacts = asyncHandler(async (req, res) => {
     try {
         const contacts = await Contact.find({}).sort({ createdAt: -1 });
@@ -20,7 +20,7 @@ const handleGetContacts = asyncHandler(async (req, res) => {
     }
 });
 
-// Get a single contact by ID
+
 const handleGetSingleContact = asyncHandler(async (req, res) => {
     try {
         const contact = await Contact.findById(req.params.contactId);
@@ -47,12 +47,12 @@ const handleGetSingleContact = asyncHandler(async (req, res) => {
     }
 });
 
-// Create a new contact
+
 const handleCreateContact = asyncHandler(async (req, res) => {
     try {
         const { firstName, lastName, dateOfBirth, phoneNumber, email } = req.body;
 
-        // Check if email already exists
+
         const existingContact = await Contact.findOne({ email });
         if (existingContact) {
             return res.status(400).json({
@@ -85,7 +85,7 @@ const handleCreateContact = asyncHandler(async (req, res) => {
     }
 });
 
-// Update a contact
+
 const handleUpdateContact = asyncHandler(async (req, res) => {
     try {
         const updatedContact = await Contact.findByIdAndUpdate(
@@ -116,7 +116,7 @@ const handleUpdateContact = asyncHandler(async (req, res) => {
     }
 });
 
-// Delete a contact
+
 const handleDeleteContact = asyncHandler(async (req, res) => {
     try {
         const deletedContact = await Contact.findByIdAndDelete(req.params.contactId);
