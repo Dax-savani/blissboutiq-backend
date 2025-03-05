@@ -4,7 +4,7 @@ const Contact = require('../models/contact');
 
 const handleGetContacts = asyncHandler(async (req, res) => {
     try {
-        const contacts = await Contact.find({}).sort({ createdAt: -1 });
+        const contacts = await Contact.find({}).sort({createdAt: -1});
         res.status(200).json({
             status: 200,
             message: "Contacts fetched successfully",
@@ -50,10 +50,10 @@ const handleGetSingleContact = asyncHandler(async (req, res) => {
 
 const handleCreateContact = asyncHandler(async (req, res) => {
     try {
-        const { firstName, lastName, dateOfBirth, phoneNumber, email } = req.body;
+        const {firstName, lastName, message, phoneNumber, email} = req.body;
 
 
-        const existingContact = await Contact.findOne({ email });
+        const existingContact = await Contact.findOne({email});
         if (existingContact) {
             return res.status(400).json({
                 status: 400,
@@ -64,7 +64,7 @@ const handleCreateContact = asyncHandler(async (req, res) => {
         const newContact = new Contact({
             firstName,
             lastName,
-            dateOfBirth,
+            message,
             phoneNumber,
             email
         });
@@ -91,7 +91,7 @@ const handleUpdateContact = asyncHandler(async (req, res) => {
         const updatedContact = await Contact.findByIdAndUpdate(
             req.params.contactId,
             req.body,
-            { new: true, runValidators: true }
+            {new: true, runValidators: true}
         );
 
         if (!updatedContact) {

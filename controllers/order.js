@@ -94,38 +94,39 @@ const handleCreateRazorpayOrder = asyncHandler(async (req, res) => {
 });
 
 const handleValidateAndPlaceOrder = asyncHandler(async (req, res) => {
-    const {razorpay_order_id, razorpay_payment_id, razorpay_signature, orders} = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orders } = req.body;
     const sha = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET);
     sha.update(`${razorpay_order_id}|${razorpay_payment_id}`);
     const digest = sha.digest("hex");
 
     if (digest !== razorpay_signature) {
-        return res.status(400).json({message: "Transaction is not legit!"});
+        return res.status(400).json({ message: "Transaction is not legit!" });
     }
 
     try {
         const newOrders = [];
+        const cartItemIds = [];
 
         for (const order of orders) {
-            const {product_id, qty, color_id, size} = order;
+            const { product_id, qty, color_id, size } = order;
 
             const product = await Product.findById(product_id);
             if (!product) {
-                return res.status(404).json({message: "Product not found", product_id});
+                return res.status(404).json({ message: "Product not found", product_id });
             }
 
             const selectedColor = product.color_options.find(option => option._id.toString() === color_id);
             if (!selectedColor) {
-                return res.status(400).json({message: "Invalid color selected", product_id});
+                return res.status(400).json({ message: "Invalid color selected", product_id });
             }
 
             const selectedSize = selectedColor.size_options.find(option => option.size === size);
             if (!selectedSize) {
-                return res.status(400).json({message: "Invalid size selected", product_id});
+                return res.status(400).json({ message: "Invalid size selected", product_id });
             }
 
             if (selectedSize.stock < qty) {
-                return res.status(400).json({message: "Insufficient stock", product_id});
+                return res.status(400).json({ message: "Insufficient stock", product_id });
             }
             selectedSize.stock -= qty;
             await product.save();
@@ -141,16 +142,27 @@ const handleValidateAndPlaceOrder = asyncHandler(async (req, res) => {
                 razorpay_payment_id,
                 price: selectedColor.price.discounted_price,
             });
+
+            // Collect cart item IDs for deletion
+            const cartItem = await Cart.findOne({ user_id: req.user._id, product_id, color_id, size });
+            if (cartItem) {
+                cartItemIds.push(cartItem._id);
+            }
         }
 
         const createdOrders = await Order.insertMany(newOrders);
+
+        // Remove ordered items from the cart
+        if (cartItemIds.length > 0) {
+            await Cart.deleteMany({ _id: { $in: cartItemIds } });
+        }
 
         res.status(201).json({
             message: "Transaction is legit! Order placed successfully.",
             orderDetails: createdOrders,
         });
     } catch (err) {
-        res.status(500).json({message: "Error placing order", error: err.message});
+        res.status(500).json({ message: "Error placing order", error: err.message });
     }
 });
 
