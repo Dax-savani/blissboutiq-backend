@@ -86,7 +86,20 @@ const handleLoginCtrl = asyncHandler(async (req, res) => {
     })
 
 })
+const handleGetAllUsers = asyncHandler(async (req, res) => {
+    const users = await User.find().select("-password");
 
+    if (!users.length) {
+        res.status(404);
+        throw new Error("No users found");
+    }
+
+    res.status(200).json({
+        data: users,
+        message: "Users retrieved successfully",
+        status: 200,
+    });
+});
 const handleGetMe = asyncHandler(async (req, res) => {
     const userId = req.user?._id;
 
@@ -117,4 +130,4 @@ const handleGetMe = asyncHandler(async (req, res) => {
     });
 });
 
-module.exports = {handleCreateUser, handleLoginCtrl, handleGetMe, handleEditAddress};
+module.exports = {handleCreateUser, handleLoginCtrl, handleGetMe, handleEditAddress , handleGetAllUsers};
