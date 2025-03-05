@@ -1,6 +1,7 @@
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Order = require('../models/order');
+const Cart = require('../models/cart');
 const Product = require('../models/product');
 const asyncHandler = require("express-async-handler");
 require("dotenv").config();
