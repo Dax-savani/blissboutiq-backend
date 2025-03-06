@@ -52,15 +52,6 @@ const handleCreateContact = asyncHandler(async (req, res) => {
     try {
         const {firstName, lastName, message, phoneNumber, email} = req.body;
 
-
-        const existingContact = await Contact.findOne({email});
-        if (existingContact) {
-            return res.status(400).json({
-                status: 400,
-                message: "Email already exists",
-            });
-        }
-
         const newContact = new Contact({
             firstName,
             lastName,
