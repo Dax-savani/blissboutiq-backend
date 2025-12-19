@@ -1,4 +1,4 @@
-
+ 
 const express = require("express");
 const {auth} = require("./middlewares/auth");
 const connectionDB = require("./config/connection");
