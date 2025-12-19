@@ -1,6 +1,6 @@
  
 const express = require("express");
-const {auth} = require("./middlewares/auth");
+const {auth} = require("./middlewares/auth"); 
 const connectionDB = require("./config/connection");
 const {notFound, errorHandler} = require("./middlewares/errorHandler");
 const app = express();
