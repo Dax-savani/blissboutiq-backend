@@ -21,7 +21,7 @@ const contactRouter = require("./routes/contact");
 //connection to database
 connectionDB(process.env.DB_CONNECTION_STRING);
 
-//Middlewares
+//Middlewaress
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
