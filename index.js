@@ -9,7 +9,7 @@ const dotenv = require("dotenv").config();
 const PORT = process.env.PORT || 4000;
 const cookieParser = require('cookie-parser')
 const cors = require('cors');
-//routess
+//routesss
 const authRouter = require("./routes/auth");
 const productRouter = require("./routes/product");
 const cartRouter = require("./routes/cart");
